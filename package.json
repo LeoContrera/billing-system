@@ -1,0 +1,27 @@
+{
+  "name": "billing-system",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.0",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "esbuild": "^0.27.2",
+    "flowbite": "^4.0.1",
+    "htmx.org": "^2.0.8",
+    "tailwindcss": "^4.1.18"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@tailwindcss/cli",
+      "esbuild"
+    ]
+  }
+}
