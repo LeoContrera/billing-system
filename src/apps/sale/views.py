@@ -17,10 +17,39 @@ from payments.services import PaymentService
 
 
 @login_required
+@require_http_methods(["GET"])
+def pos_index(request):
+    """
+    Interfaz principal del POS (standalone).
+
+    GET /sale/pos/
+
+    Crea nueva venta al cargar la página y muestra la interfaz POS completa.
+    Esta vista renderiza pos_index.html con todos los datos necesarios.
+    """
+    # Crear nueva venta al cargar la página
+    sale = SaleService.create_sale(request.user)
+
+    # Pre-fetch de relaciones para evitar N+1 queries
+    sale = (Sale.objects
+            .select_related('customer', 'created_by')
+            .prefetch_related('line_items', 'transactions__payment_method')
+            .get(pk=sale.id))
+
+    payment_methods = PaymentService.get_active_payment_methods()
+
+    context = {
+        'sale': sale,
+        'payment_methods': payment_methods,
+    }
+    return render(request, 'sale/pos_index.html', context)
+
+
+@login_required
 @require_http_methods(["GET", "POST"])
 def create_sale(request):
     """
-    Interfaz principal del POS.
+    Interfaz principal del POS (versión HTMX).
 
     GET /sale/create/
 
@@ -126,6 +155,34 @@ def discount_item(request):
 
         # Renderizar solo la fila actualizada
         return render(request, 'sale/_line_item_row.html', {'item': line_item})
+
+    except ValidationError as e:
+        return HttpResponse(f'<div class="text-red-600">{e.message}</div>', status=400)
+
+
+@login_required
+@require_POST
+def add_payment(request):
+    """
+    Agregar pago a venta.
+
+    POST /sale/add-payment/
+    HTMX: Renderiza fila de pago actualizada
+    """
+    try:
+        sale_id = int(request.POST.get('sale_id'))
+        payment_method_id = int(request.POST.get('payment_method_id'))
+        amount = Decimal(request.POST.get('amount'))
+
+        transaction = PaymentService.add_payment(
+            sale_id=sale_id,
+            payment_method_id=payment_method_id,
+            amount=amount,
+            user=request.user
+        )
+
+        # Renderizar fila de pago
+        return render(request, 'sale/_payment_row.html', {'transaction': transaction})
 
     except ValidationError as e:
         return HttpResponse(f'<div class="text-red-600">{e.message}</div>', status=400)

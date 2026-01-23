@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS - Venta #{{ sale.id|default:"Nueva" }}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Custom Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #f59e0b;
+            --secondary-dark: #d97706;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        * {
+            font-variant-numeric: tabular-nums;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+        }
+
+        .font-mono {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .shadow-float {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .shadow-float-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .table-header {
+            background: var(--gray-100);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .table-row {
+            border-bottom: 1px solid var(--gray-200);
+            transition: background 0.15s;
+        }
+
+        .table-row:hover {
+            background: var(--gray-50);
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--gray-200);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
+    </style>
+</head>
+<body class="h-full antialiased" x-data="posApp()">
+    <!-- Header -->
+    <header class="border-b border-gray-200 bg-white shadow-sm">
+        <div class="px-8 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 font-medium">Cajero</div>
+                    <div class="text-base font-bold mt-0.5 text-gray-900">{{ user.username }}</div>
+                </div>
+                <div class="h-8 w-px bg-gray-300"></div>
+                <div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 font-medium">Venta</div>
+                    <div class="text-base font-mono font-bold mt-0.5 text-blue-600">#{{ sale.id|default:"NUEVA" }}</div>
+                </div>
+            </div>
+
+            <a
+                href="/"
+                class="px-5 py-2 text-sm font-semibold text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg transition-colors">
+                Volver al inicio
+            </a>
+        </div>
+    </header>
+
+    <div class="h-[calc(100vh-73px)] flex">
+        <!-- Left Column: Customer & Products -->
+        <div class="flex-1 overflow-y-auto bg-gray-50">
+            <div class="p-8 space-y-6">
+
+                <!-- Customer Details Card -->
+                <section class="card p-6 shadow-float">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-sm uppercase tracking-wider font-bold text-blue-600">Cliente</h2>
+                        <span class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">Opcional</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Nombre</label>
+                            <input
+                                type="text"
+                                x-model="customer.firstName"
+                                class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                                placeholder="Nombre">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Apellido</label>
+                            <input
+                                type="text"
+                                x-model="customer.lastName"
+                                class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                                placeholder="Apellido">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Teléfono</label>
+                            <input
+                                type="text"
+                                x-model="customer.phone"
+                                class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                                placeholder="+54 9 11 xxxx-xxxx">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Products Table -->
+                <section class="card shadow-float">
+                    <div class="p-6 pb-4">
+                        <h2 class="text-sm uppercase tracking-wider font-bold text-blue-600">Productos</h2>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="table-header">
+                                    <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">SKU</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">Descripción</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Cantidad</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Precio Unit.</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Subtotal</th>
+                                    <th class="px-6 py-4"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white">
+                                <template x-for="(item, index) in lineItems" :key="index">
+                                    <tr class="table-row animate-slide-in">
+                                        <td class="px-6 py-4">
+                                            <span class="font-mono text-sm font-medium text-amber-600" x-text="item.sku"></span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="text-sm font-medium text-gray-900" x-text="item.description"></span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <span class="font-mono text-sm font-semibold text-gray-900" x-text="item.quantity"></span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <span class="font-mono text-sm text-gray-700" x-text="formatCurrency(item.unitPrice)"></span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <span class="font-mono text-base font-bold text-gray-900" x-text="formatCurrency(item.subtotal)"></span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button
+                                                @click="removeLineItem(index)"
+                                                class="text-red-600 hover:text-red-700 transition-colors text-sm font-semibold">
+                                                Eliminar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+
+                                <tr x-show="lineItems.length === 0">
+                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500 text-sm">
+                                        No hay productos agregados
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="p-6 pt-4 border-t border-gray-200 bg-gray-50">
+                        <button
+                            @click="addSampleProduct()"
+                            class="btn w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold">
+                            + Agregar Producto
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Discounts Section -->
+                <section class="card p-6 shadow-float">
+                    <h2 class="text-sm uppercase tracking-wider font-bold text-amber-600 mb-6">Descuentos</h2>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <button
+                            @click="applyUnitDiscount()"
+                            class="btn py-4 bg-white border border-gray-300 hover:border-amber-500 rounded-lg text-sm font-semibold text-gray-700 hover:text-amber-600">
+                            Descuento por Unidad
+                        </button>
+                        <button
+                            @click="applyGlobalDiscount()"
+                            class="btn py-4 bg-white border border-gray-300 hover:border-amber-500 rounded-lg text-sm font-semibold text-gray-700 hover:text-amber-600">
+                            Descuento Total
+                        </button>
+                    </div>
+
+                    <div x-show="globalDiscount > 0" class="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-amber-700 font-medium">Descuento global aplicado</span>
+                            <span class="font-mono font-bold text-amber-700" x-text="formatCurrency(globalDiscount)"></span>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+
+        <!-- Right Column: Payment & Totals -->
+        <div class="w-[460px] border-l border-gray-200 bg-white overflow-y-auto">
+            <div class="p-8 space-y-6">
+
+                <!-- Total Display (Prominent) -->
+                <section class="card p-8 shadow-float-lg bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
+                    <div class="text-center">
+                        <div class="text-xs uppercase tracking-widest font-bold text-blue-600 mb-3">Total de Venta</div>
+                        <div class="font-mono text-5xl font-black text-gray-900 mb-2" x-text="formatCurrency(calculateTotal())"></div>
+                        <div class="text-sm text-gray-600">
+                            <span>Subtotal: </span>
+                            <span class="font-mono font-semibold" x-text="formatCurrency(calculateSubtotal())"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Payment Methods -->
+                <section class="card p-6 shadow-float">
+                    <h2 class="text-sm uppercase tracking-wider font-bold text-blue-600 mb-6">Métodos de Pago</h2>
+
+                    <div class="space-y-3">
+                        <template x-for="(payment, index) in payments" :key="index">
+                            <div class="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200 animate-slide-in">
+                                <div class="flex-1">
+                                    <div class="text-sm font-semibold text-gray-900" x-text="payment.method"></div>
+                                    <div class="text-xs text-gray-600 mt-0.5">Registrado</div>
+                                </div>
+                                <div class="font-mono text-lg font-bold text-green-600" x-text="formatCurrency(payment.amount)"></div>
+                                <button
+                                    @click="removePayment(index)"
+                                    class="text-red-600 hover:text-red-700 transition-colors text-xs font-semibold">
+                                    ✕
+                                </button>
+                            </div>
+                        </template>
+
+                        <div x-show="payments.length === 0" class="text-center py-6 text-gray-500 text-sm">
+                            No hay pagos registrados
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <button
+                            @click="openPaymentModal()"
+                            class="btn w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm shadow-float">
+                            + Agregar Método de Pago
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Balance Summary -->
+                <section class="card p-6 shadow-float bg-gray-50">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600 font-medium">Total pagado</span>
+                            <span class="font-mono font-semibold text-green-600" x-text="formatCurrency(calculateTotalPaid())"></span>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-gray-900">Saldo restante</span>
+                            <span
+                                class="font-mono text-xl font-black"
+                                :class="calculateRemaining() <= 0 ? 'text-green-600' : 'text-amber-600'"
+                                x-text="formatCurrency(Math.abs(calculateRemaining()))">
+                            </span>
+                        </div>
+                        <div x-show="calculateRemaining() <= 0" class="pt-2 text-xs text-green-600 text-center font-medium">
+                            ✓ Venta completamente pagada
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button
+                        @click="viewDetails()"
+                        class="btn w-full py-4 bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg font-bold text-sm">
+                        Ver Detalles
+                    </button>
+
+                    <button
+                        @click="finalizeSale()"
+                        :disabled="!canFinalize()"
+                        :class="canFinalize() ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 cursor-pointer shadow-float-lg' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
+                        class="btn w-full py-5 text-white rounded-lg font-black text-base transition-all">
+                        Finalizar Venta
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div
+        x-show="showPaymentModal"
+        x-cloak
+        @click.self="showPaymentModal = false"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        style="display: none;">
+        <div class="card p-8 max-w-md w-full animate-slide-in shadow-float-lg" @click.stop>
+            <h3 class="text-xl font-bold mb-6 text-blue-600">Agregar Pago</h3>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Método de Pago</label>
+                    <select
+                        x-model="newPayment.method"
+                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900">
+                        <option value="EFECTIVO">Efectivo</option>
+                        <option value="DÉBITO">Tarjeta de Débito</option>
+                        <option value="CRÉDITO">Tarjeta de Crédito</option>
+                        <option value="TRANSFERENCIA">Transferencia</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Monto</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">$</span>
+                        <input
+                            type="number"
+                            x-model="newPayment.amount"
+                            step="0.01"
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pl-8 text-sm font-mono text-gray-900"
+                            placeholder="0.00">
+                    </div>
+                    <div class="mt-2 text-xs text-gray-600">
+                        Saldo restante: <span class="font-mono font-semibold text-amber-600" x-text="formatCurrency(calculateRemaining())"></span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button
+                        @click="showPaymentModal = false"
+                        class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button
+                        @click="addPayment()"
+                        class="btn flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm">
+                        Agregar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function posApp() {
+            return {
+                // Customer data
+                customer: {
+                    firstName: '{{ sale.customer.first_name|default:"" }}',
+                    lastName: '{{ sale.customer.last_name|default:"" }}',
+                    phone: '{{ sale.customer.phone|default:"" }}'
+                },
+
+                // Line items
+                lineItems: [
+                    {% for item in sale.line_items.all %}
+                    {
+                        sku: '{{ item.sku }}',
+                        description: '{{ item.product_name }}',
+                        quantity: {{ item.quantity }},
+                        unitPrice: {{ item.unit_price }},
+                        discountAmount: {{ item.discount_amount }},
+                        get subtotal() {
+                            return (this.quantity * this.unitPrice) - this.discountAmount;
+                        }
+                    }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+
+                // Global discount
+                globalDiscount: {{ sale.global_discount_amount|default:"0" }},
+
+                // Payments
+                payments: [
+                    {% for transaction in sale.transactions.all %}
+                    {
+                        method: '{{ transaction.payment_method.name }}',
+                        amount: {{ transaction.amount }}
+                    }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+
+                // Modal state
+                showPaymentModal: false,
+                newPayment: {
+                    method: 'EFECTIVO',
+                    amount: 0
+                },
+
+                // Methods
+                calculateSubtotal() {
+                    return this.lineItems.reduce((sum, item) => sum + item.subtotal, 0);
+                },
+
+                calculateTotal() {
+                    return Math.max(0, this.calculateSubtotal() - this.globalDiscount);
+                },
+
+                calculateTotalPaid() {
+                    return this.payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+                },
+
+                calculateRemaining() {
+                    return this.calculateTotal() - this.calculateTotalPaid();
+                },
+
+                canFinalize() {
+                    return this.lineItems.length > 0 && this.calculateRemaining() <= 0;
+                },
+
+                formatCurrency(value) {
+                    return new Intl.NumberFormat('es-AR', {
+                        style: 'currency',
+                        currency: 'ARS',
+                        minimumFractionDigits: 2
+                    }).format(value);
+                },
+
+                openPaymentModal() {
+                    this.newPayment.amount = Math.max(0, this.calculateRemaining());
+                    this.showPaymentModal = true;
+                },
+
+                addPayment() {
+                    if (this.newPayment.amount > 0) {
+                        this.payments.push({
+                            method: this.newPayment.method,
+                            amount: parseFloat(this.newPayment.amount)
+                        });
+                        this.showPaymentModal = false;
+                        this.newPayment = { method: 'EFECTIVO', amount: 0 };
+                    }
+                },
+
+                removePayment(index) {
+                    this.payments.splice(index, 1);
+                },
+
+                removeLineItem(index) {
+                    this.lineItems.splice(index, 1);
+                },
+
+                addSampleProduct() {
+                    // For demo purposes - replace with actual product selection
+                    this.lineItems.push({
+                        sku: 'ABC' + Math.floor(Math.random() * 1000),
+                        description: 'Producto de ejemplo',
+                        quantity: 1,
+                        unitPrice: 50000,
+                        discountAmount: 0,
+                        get subtotal() {
+                            return (this.quantity * this.unitPrice) - this.discountAmount;
+                        }
+                    });
+                },
+
+                applyUnitDiscount() {
+                    const discount = parseFloat(prompt('Ingrese el descuento por unidad:') || 0);
+                    if (discount > 0 && this.lineItems.length > 0) {
+                        this.lineItems[this.lineItems.length - 1].discountAmount = discount;
+                    }
+                },
+
+                applyGlobalDiscount() {
+                    const discount = parseFloat(prompt('Ingrese el descuento total:') || 0);
+                    if (discount >= 0) {
+                        this.globalDiscount = discount;
+                    }
+                },
+
+                viewDetails() {
+                    alert('Funcionalidad de ver detalles - Por implementar');
+                },
+
+                finalizeSale() {
+                    if (this.canFinalize()) {
+                        if (confirm('¿Confirmar finalización de venta?')) {
+                            alert('Venta finalizada con éxito');
+                            // Submit to backend
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
