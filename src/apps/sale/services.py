@@ -5,11 +5,17 @@ Este módulo implementa el Service Layer Pattern con transacciones atómicas
 para garantizar la integridad de las operaciones de venta.
 """
 
-from django.db import transaction
-from django.core.exceptions import ValidationError
 from decimal import Decimal
-from .models import Sale, SaleLineItem
+
+from django.core.exceptions import ValidationError
+from django.db import transaction
+
 from customers.models import Customer
+from inventory.services import InventoryService
+from products.models import Product
+from products.services import ProductService
+
+from .models import Sale, SaleLineItem
 
 
 class SaleService:
@@ -76,31 +82,37 @@ class SaleService:
     @transaction.atomic
     def add_line_item(
         sale_id: int,
-        product_name: str,
+        sku: str,
         quantity: Decimal,
-        unit_price: Decimal,
-        sku: str = ''
     ) -> SaleLineItem:
         """
-        Agrega producto a la venta.
+        Agrega producto a la venta con validación de producto e inventario.
 
         Args:
             sale_id: ID de la venta
-            product_name: Nombre del producto
-            quantity: Cantidad
-            unit_price: Precio unitario
-            sku: Código SKU (opcional)
+            sku: Código SKU del producto
+            quantity: Cantidad a vender
 
         Returns:
             SaleLineItem: Línea de producto creada
 
         Raises:
-            ValidationError: Si la venta no está PENDING, cantidad <= 0, o precio < 0
+            ValidationError: Si la venta no está PENDING, producto inválido,
+                            o stock insuficiente
+
+        Flujo (Steps 3-7 del diagrama de secuencia):
+            1. Lock de la venta, validar que esté PENDING
+            2. ProductService.validate_sku(sku) - obtener datos del producto
+            3. InventoryService.check_availability(sku, qty) - verificar stock
+            4. Si no hay stock: raise ValidationError("Stock insuficiente")
+            5. Si hay stock: crear SaleLineItem con datos del producto
 
         Patrones:
             - Validación de negocio (sale debe estar PENDING)
             - select_for_update() para lock pesimista
+            - Integración con ProductService e InventoryService
         """
+        # 1. Lock de la venta
         sale = Sale.objects.select_for_update().get(pk=sale_id)
 
         if sale.status != Sale.PENDING:
@@ -109,15 +121,28 @@ class SaleService:
         if quantity <= 0:
             raise ValidationError("La cantidad debe ser mayor a cero")
 
-        if unit_price < 0:
-            raise ValidationError("El precio no puede ser negativo")
+        # 2. Validar producto (Step 3 del diagrama)
+        product_data = ProductService.validate_sku(sku)
+
+        # 3. Verificar disponibilidad de stock (Steps 4-5)
+        if not InventoryService.check_availability(sku, quantity):
+            # Step 7: Stock insuficiente
+            stock_level = InventoryService.get_stock_level(sku)
+            raise ValidationError(
+                f"Stock insuficiente para '{product_data.name}'. "
+                f"Disponible: {stock_level or 0}, Solicitado: {quantity}"
+            )
+
+        # Step 6: Agregar al carrito con datos del producto
+        product = Product.objects.get(pk=product_data.id)
 
         return SaleLineItem.objects.create(
             sale=sale,
-            product_name=product_name,
-            sku=sku,
+            product=product,
+            product_name=product_data.name,
+            sku=product_data.sku,
             quantity=quantity,
-            unit_price=unit_price
+            unit_price=product_data.price,
         )
 
     @staticmethod
@@ -199,30 +224,33 @@ class SaleService:
 
     @staticmethod
     @transaction.atomic
-    def finalize_sale(sale_id: int) -> Sale:
+    def finalize_sale(sale_id: int, user) -> Sale:
         """
         Finaliza venta (transacción atómica crítica).
 
         Args:
             sale_id: ID de la venta
+            user: Usuario que finaliza (para registro de movimientos)
 
         Returns:
             Sale: Venta finalizada
 
         Raises:
-            ValidationError: Si venta ya está completada o no está pagada
+            ValidationError: Si venta ya está completada, no está pagada,
+                            o hay stock insuficiente para algún item
 
         Patrones:
             - @transaction.atomic garantiza que todo se ejecuta o nada
             - select_for_update() previene concurrencia
             - Validaciones de negocio complejas
+            - Descuento de inventario integrado
 
         Flujo:
             1. Lock de la venta
             2. Validar que esté pagada
-            3. Actualizar estado a COMPLETED
-            4. Registrar timestamp
-            5. (Futuro) Descontar inventario
+            3. Descontar inventario (register_sale_movements)
+            4. Actualizar estado a COMPLETED
+            5. Registrar timestamp
         """
         from django.utils import timezone
 
@@ -239,6 +267,16 @@ class SaleService:
             raise ValidationError(
                 f"La venta no está completamente pagada. "
                 f"Falta: ${sale.remaining_balance}"
+            )
+
+        # Descontar inventario para todos los items con SKU
+        # Si algún item no tiene stock suficiente, se hace rollback de todo
+        line_items_with_sku = sale.line_items.filter(sku__isnull=False).exclude(sku='')
+        if line_items_with_sku.exists():
+            InventoryService.register_sale_movements(
+                sale_id=sale.id,
+                line_items=line_items_with_sku,
+                user=user,
             )
 
         sale.status = Sale.COMPLETED

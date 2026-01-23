@@ -109,6 +109,7 @@ class SaleLineItem(models.Model):
 
     Attributes:
         sale: Venta a la que pertenece este item
+        product: Referencia al producto (opcional, para trazabilidad)
         product_name: Nombre del producto (desnormalizado para historial)
         sku: Código SKU del producto
         quantity: Cantidad vendida
@@ -124,11 +125,21 @@ class SaleLineItem(models.Model):
     Patrones:
         - CASCADE: Si se borra venta, se borran items (relación compositiva)
         - Desnormalización: product_name se guarda para mantener historial
+        - SET_NULL para product: mantiene historial aunque producto se elimine
     """
     sale = models.ForeignKey(
         Sale,
         on_delete=models.CASCADE,  # Si se borra venta, se borran items
         related_name='line_items'
+    )
+    product = models.ForeignKey(
+        'products.Product',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sale_line_items',
+        verbose_name="Producto",
+        help_text="Referencia al producto (se mantiene desnormalización)"
     )
     product_name = models.CharField(
         "Producto",

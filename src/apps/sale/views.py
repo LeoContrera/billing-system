@@ -92,25 +92,35 @@ def set_customer(request):
 @require_POST
 def add_item(request):
     """
-    Agregar producto a venta.
+    Agregar producto a venta con validación de producto e inventario.
 
     POST /sale/add-item/
     HTMX: Renderiza solo la nueva fila de producto
+
+    Parámetros POST:
+        - sale_id: ID de la venta
+        - sku: SKU del producto (requerido)
+        - quantity: Cantidad (default: 1)
+
+    Nota: product_name y unit_price se obtienen automáticamente del ProductService
     """
     try:
         sale_id = int(request.POST.get('sale_id'))
-        product_name = request.POST.get('product_name')
-        sku = request.POST.get('sku', '')
-        quantity = Decimal(request.POST.get('quantity'))
-        unit_price = Decimal(request.POST.get('unit_price'))
+        sku = request.POST.get('sku', '').strip()
+        quantity = Decimal(request.POST.get('quantity', '1'))
 
-        item = SaleService.add_line_item(sale_id, product_name, quantity, unit_price, sku)
+        # El servicio ahora valida producto y stock automáticamente
+        item = SaleService.add_line_item(sale_id, sku, quantity)
 
         # Renderizar solo la nueva fila
         return render(request, 'sale/_product_row.html', {'item': item})
 
     except ValidationError as e:
-        return HttpResponse(f'<div class="text-red-600">{e.message}</div>', status=400)
+        error_message = e.message if hasattr(e, 'message') else str(e)
+        return HttpResponse(
+            f'<div class="text-red-600 p-2 rounded bg-red-50">{error_message}</div>',
+            status=400
+        )
 
 
 @login_required
@@ -192,17 +202,26 @@ def add_payment(request):
 @require_POST
 def finalize_sale(request):
     """
-    Finalizar venta.
+    Finalizar venta con descuento de inventario.
 
     POST /sale/finalize/
     HTMX: Renderiza mensaje de éxito + botón para nueva venta
+
+    Nota: Al finalizar, se registran movimientos de inventario para todos
+    los items con SKU. Si algún item no tiene stock suficiente, se hace
+    rollback de toda la operación.
     """
     try:
         sale_id = int(request.POST.get('sale_id'))
-        sale = SaleService.finalize_sale(sale_id)
+        # Pasar usuario para registro de movimientos de inventario
+        sale = SaleService.finalize_sale(sale_id, request.user)
 
         # Renderizar mensaje de éxito + botón para nueva venta
         return render(request, 'sale/_sale_completed.html', {'sale': sale})
 
     except ValidationError as e:
-        return HttpResponse(f'<div class="text-red-600">{e.message}</div>', status=400)
+        error_message = e.message if hasattr(e, 'message') else str(e)
+        return HttpResponse(
+            f'<div class="text-red-600 p-2 rounded bg-red-50">{error_message}</div>',
+            status=400
+        )
