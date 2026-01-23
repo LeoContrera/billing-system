@@ -1,0 +1,16 @@
+{% if sale.customer %}
+<div class="p-4 bg-green-50 dark:bg-green-900 rounded-lg">
+    <p class="text-sm font-medium text-gray-900 dark:text-white">Cliente Seleccionado:</p>
+    <p class="text-lg font-bold text-gray-900 dark:text-white">{{ sale.customer.full_name }}</p>
+    {% if sale.customer.tax_id %}
+    <p class="text-sm text-gray-600 dark:text-gray-400">DNI/CUIT: {{ sale.customer.tax_id }}</p>
+    {% endif %}
+    {% if sale.customer.phone %}
+    <p class="text-sm text-gray-600 dark:text-gray-400">Tel: {{ sale.customer.phone }}</p>
+    {% endif %}
+</div>
+{% else %}
+<div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+    <p class="text-sm text-gray-600 dark:text-gray-400">No se ha seleccionado cliente</p>
+</div>
+{% endif %}

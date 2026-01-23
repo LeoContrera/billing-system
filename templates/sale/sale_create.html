@@ -1,0 +1,475 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Force light theme */
+    body {
+        background-color: #f3f4f6 !important;
+        color: #000 !important;
+    }
+    .pos-container {
+        background: white;
+        border: 2px solid #000;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    .pos-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+        border-bottom: 2px solid #000;
+    }
+    .pos-user {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: bold;
+        font-size: 18px;
+    }
+    .pos-sale-number {
+        font-weight: bold;
+        font-size: 18px;
+        text-align: center;
+    }
+    .section-title {
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+    .pos-section {
+        padding: 20px 24px;
+        border-bottom: 2px solid #000;
+    }
+    .pos-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+    .form-group {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .form-label {
+        font-weight: bold;
+        text-align: left;
+    }
+    .form-input {
+        border: 1px solid #000;
+        padding: 8px;
+        font-size: 14px;
+    }
+    .table-productos {
+        width: 100%;
+        border-collapse: collapse;
+        border: 2px solid #000;
+        margin-top: 12px;
+    }
+    .table-productos th {
+        border: 1px solid #000;
+        padding: 10px;
+        background: white;
+        font-weight: bold;
+        text-align: center;
+    }
+    .table-productos td {
+        border: 1px solid #000;
+        padding: 10px;
+        text-align: center;
+    }
+    .table-pagos {
+        width: 100%;
+        border-collapse: collapse;
+        border: 2px solid #000;
+        margin-top: 12px;
+    }
+    .table-pagos th,
+    .table-pagos td {
+        border: 1px solid #000;
+        padding: 10px;
+        text-align: left;
+    }
+    .table-pagos th {
+        font-weight: bold;
+        background: white;
+    }
+    .btn-primary {
+        border: 2px solid #000;
+        background: white;
+        padding: 10px 24px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-primary:hover {
+        background: #f3f4f6;
+    }
+    .btn-add-payment {
+        margin-top: 12px;
+        font-size: 16px;
+    }
+    .ticket-box {
+        border: 2px solid #000;
+        padding: 20px;
+        text-align: center;
+    }
+    .ticket-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 16px;
+    }
+    .total-box {
+        border: 2px solid #000;
+        padding: 20px;
+        margin-top: 16px;
+    }
+    .total-label {
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+    .total-amount {
+        font-size: 48px;
+        font-weight: bold;
+        text-align: center;
+        padding: 20px;
+        border: 1px solid #000;
+        margin-bottom: 16px;
+    }
+    .btn-finalizar {
+        width: 100%;
+        border: 2px solid #000;
+        background: white;
+        padding: 16px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 8px;
+    }
+    .btn-finalizar:hover {
+        background: #f3f4f6;
+    }
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.4);
+    }
+    .modal.active {
+        display: block;
+    }
+    .modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 20px;
+        border: 2px solid #000;
+        width: 500px;
+    }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #000;
+    }
+    .close {
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .modal-form-group {
+        margin-bottom: 16px;
+    }
+    .modal-form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+    .modal-form-group input,
+    .modal-form-group select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #000;
+        font-size: 14px;
+    }
+</style>
+
+<div class="pos-container">
+    <!-- Header -->
+    <div class="pos-header">
+        <div class="pos-user">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>{{ request.user.username|upper }}</span>
+        </div>
+        <div class="pos-sale-number">Venta #{{ sale.id|stringformat:"04d" }}</div>
+        <div>
+            <a href="/admin/logout/" class="btn-primary">Cerrar sesión</a>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="pos-grid">
+        <!-- Left Column -->
+        <div>
+            <!-- Detalles Cliente -->
+            <div class="pos-section">
+                <div class="section-title">Detalles Cliente</div>
+                <div class="form-group">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" class="form-input" id="customer_first_name" value="{{ sale.customer.first_name|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" class="form-input" id="customer_last_name" value="{{ sale.customer.last_name|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono/Celular</label>
+                    <input type="text" class="form-input" id="customer_phone" value="{{ sale.customer.phone|default:'' }}">
+                </div>
+            </div>
+
+            <!-- Detalles producto -->
+            <div class="pos-section">
+                <div class="section-title">Detalles producto</div>
+                <table class="table-productos">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">SKU</th>
+                            <th>Descripción</th>
+                            <th style="width: 80px;">Cantidad</th>
+                            <th style="width: 120px;">Precio Unitario</th>
+                            <th style="width: 120px;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productos-tbody">
+                        {% for item in sale.line_items.all %}
+                        <tr>
+                            <td>{{ item.sku|default:'' }}</td>
+                            <td style="text-align: left;">{{ item.product_name|upper }}</td>
+                            <td>{{ item.quantity|floatformat:0 }}</td>
+                            <td>${{ item.unit_price|floatformat:2 }}</td>
+                            <td>${{ item.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr id="empty-row" {% if sale.line_items.all %}style="display:none;"{% endif %}>
+                            <td colspan="5" style="text-align: center; color: #999;">No hay productos</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn-primary" style="margin-top: 12px;" onclick="openProductModal()">+ Agregar producto</button>
+            </div>
+
+            <!-- Detalles descuentos -->
+            <div class="pos-section">
+                <div class="section-title">Detalles descuentos</div>
+                <button class="btn-primary" style="margin-right: 12px;">Aplicar descuento por unidad</button>
+                <button class="btn-primary">Aplicar descuento total</button>
+            </div>
+
+            <!-- Detalles de pago -->
+            <div class="pos-section" style="border-bottom: none;">
+                <div class="section-title">Detalles de pago</div>
+                <table class="table-pagos">
+                    <thead>
+                        <tr>
+                            <th style="width: 60%;">Método de pago</th>
+                            <th style="width: 40%;">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pagos-tbody">
+                        {% for transaction in sale.transactions.all %}
+                        <tr>
+                            <td>{{ transaction.payment_method.name|upper }}</td>
+                            <td>$ {{ transaction.amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr id="empty-payment-row" {% if sale.transactions.all %}style="display:none;"{% endif %}>
+                            <td colspan="2" style="text-align: center; color: #999;">No hay pagos registrados</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn-primary btn-add-payment" onclick="openPaymentModal()">+ Agregar método de pago</button>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div>
+            <!-- Ticket Común -->
+            <div class="ticket-box">
+                <div class="ticket-title">Ticket Común</div>
+                <button class="btn-primary">Modificar comprobante</button>
+            </div>
+
+            <!-- Total -->
+            <div class="total-box">
+                <div class="total-label">Total</div>
+                <div class="total-amount" id="total-amount">
+                    $ <span id="total-value">{{ sale.total|floatformat:2 }}</span>
+                </div>
+                <button class="btn-primary" style="width: 100%;">Ver detalles</button>
+                <button class="btn-finalizar" onclick="finalizarVenta()">Finalizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Agregar Producto -->
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="margin: 0;">Agregar Producto</h2>
+            <span class="close" onclick="closeProductModal()">&times;</span>
+        </div>
+        <form id="productForm" hx-post="{% url 'sale:add_item' %}" hx-target="#productos-tbody" hx-swap="beforeend" hx-on::after-request="if(event.detail.successful) closeProductModal()">
+            {% csrf_token %}
+            <input type="hidden" name="sale_id" value="{{ sale.id }}">
+
+            <div class="modal-form-group">
+                <label>SKU</label>
+                <input type="text" name="sku" class="form-input">
+            </div>
+
+            <div class="modal-form-group">
+                <label>Descripción *</label>
+                <input type="text" name="product_name" class="form-input" required>
+            </div>
+
+            <div class="modal-form-group">
+                <label>Cantidad *</label>
+                <input type="number" name="quantity" step="1" min="1" value="1" class="form-input" required>
+            </div>
+
+            <div class="modal-form-group">
+                <label>Precio Unitario *</label>
+                <input type="number" name="unit_price" step="0.01" min="0" class="form-input" required>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 8px;">Agregar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Agregar Pago -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="margin: 0;">Agregar Pago</h2>
+            <span class="close" onclick="closePaymentModal()">&times;</span>
+        </div>
+        <form id="paymentForm" hx-post="{% url 'payments:add_payment' %}" hx-target="#pagos-tbody" hx-swap="beforeend" hx-on::after-request="if(event.detail.successful) closePaymentModal()">
+            {% csrf_token %}
+            <input type="hidden" name="sale_id" value="{{ sale.id }}">
+
+            <div class="modal-form-group">
+                <label>Método de Pago *</label>
+                <select name="payment_method_id" class="form-input" required>
+                    <option value="">Seleccionar...</option>
+                    {% for method in payment_methods %}
+                    <option value="{{ method.id }}">{{ method.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="modal-form-group">
+                <label>Monto *</label>
+                <input type="number" name="amount" step="0.01" min="0.01" class="form-input" required>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 8px;">Agregar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openProductModal() {
+    document.getElementById('productModal').classList.add('active');
+    document.getElementById('productForm').reset();
+}
+
+function closeProductModal() {
+    document.getElementById('productModal').classList.remove('active');
+    document.getElementById('productForm').reset();
+    // Hide empty row if there are products
+    const tbody = document.getElementById('productos-tbody');
+    const rows = tbody.querySelectorAll('tr:not(#empty-row)');
+    if (rows.length > 0) {
+        document.getElementById('empty-row').style.display = 'none';
+    }
+}
+
+function openPaymentModal() {
+    document.getElementById('paymentModal').classList.add('active');
+    document.getElementById('paymentForm').reset();
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentModal').classList.remove('active');
+    document.getElementById('paymentForm').reset();
+    // Hide empty row if there are payments
+    const tbody = document.getElementById('pagos-tbody');
+    const rows = tbody.querySelectorAll('tr:not(#empty-payment-row)');
+    if (rows.length > 0) {
+        document.getElementById('empty-payment-row').style.display = 'none';
+    }
+    // Update total
+    updateTotal();
+}
+
+function updateTotal() {
+    fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newTotal = doc.getElementById('total-value').textContent;
+            document.getElementById('total-value').textContent = newTotal;
+        });
+}
+
+function finalizarVenta() {
+    if (confirm('¿Finalizar venta #{{ sale.id|stringformat:"04d" }}?')) {
+        fetch('{% url "sale:finalize" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'sale_id={{ sale.id }}'
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('¡Venta finalizada exitosamente!');
+                window.location.href = '{% url "sale:create" %}';
+            } else {
+                response.text().then(text => alert('Error: ' + text));
+            }
+        });
+    }
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('active');
+    }
+}
+
+// Update total after HTMX request
+document.body.addEventListener('htmx:afterSwap', function(event) {
+    updateTotal();
+});
+</script>
+{% endblock %}

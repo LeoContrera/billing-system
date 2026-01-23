@@ -1,0 +1,7 @@
+<tr>
+    <td>{{ item.sku|default:'' }}</td>
+    <td style="text-align: left;">{{ item.product_name|upper }}</td>
+    <td>{{ item.quantity|floatformat:0 }}</td>
+    <td>${{ item.unit_price|floatformat:2 }}</td>
+    <td>${{ item.subtotal|floatformat:2 }}</td>
+</tr>

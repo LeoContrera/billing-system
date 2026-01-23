@@ -1,0 +1,31 @@
+{% if sale.line_items.all %}
+<div class="relative overflow-x-auto">
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3">Producto</th>
+                <th scope="col" class="px-6 py-3">SKU</th>
+                <th scope="col" class="px-6 py-3">Cantidad</th>
+                <th scope="col" class="px-6 py-3">Precio Unit.</th>
+                <th scope="col" class="px-6 py-3">Descuento</th>
+                <th scope="col" class="px-6 py-3">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in sale.line_items.all %}
+            {% include 'sale/_line_item_row.html' %}
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="font-semibold text-gray-900 dark:text-white">
+                <th scope="row" colspan="5" class="px-6 py-3 text-right">Total Items:</th>
+                <td class="px-6 py-3">${{ sale.subtotal }}</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% else %}
+<div class="p-4 text-center text-gray-500 dark:text-gray-400">
+    No hay productos agregados
+</div>
+{% endif %}

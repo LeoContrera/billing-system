@@ -1,0 +1,38 @@
+[
+  {
+    "model": "payments.paymentmethod",
+    "pk": 1,
+    "fields": {
+      "name": "Efectivo",
+      "method_type": "CASH",
+      "is_active": true
+    }
+  },
+  {
+    "model": "payments.paymentmethod",
+    "pk": 2,
+    "fields": {
+      "name": "Tarjeta de Débito",
+      "method_type": "DEBIT",
+      "is_active": true
+    }
+  },
+  {
+    "model": "payments.paymentmethod",
+    "pk": 3,
+    "fields": {
+      "name": "Tarjeta de Crédito",
+      "method_type": "CREDIT",
+      "is_active": true
+    }
+  },
+  {
+    "model": "payments.paymentmethod",
+    "pk": 4,
+    "fields": {
+      "name": "Transferencia",
+      "method_type": "TRANSFER",
+      "is_active": true
+    }
+  }
+]

@@ -1,0 +1,27 @@
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Lista de Pagos -->
+    <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Pagos Registrados</h3>
+        {% if sale.transactions.all %}
+        <ul class="space-y-2">
+            {% for transaction in sale.transactions.all %}
+            <li class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <span class="text-sm text-gray-900 dark:text-white">
+                    {{ transaction.payment_method.name }}
+                </span>
+                <span class="text-sm font-bold text-gray-900 dark:text-white">
+                    ${{ transaction.amount }}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-gray-500 dark:text-gray-400">No hay pagos registrados</p>
+        {% endif %}
+    </div>
+
+    <!-- Totales -->
+    <div>
+        {% include 'sale/_totals_section.html' %}
+    </div>
+</div>

@@ -1,0 +1,8 @@
+<tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ item.product_name }}</td>
+    <td class="px-6 py-4">{{ item.sku|default:"-" }}</td>
+    <td class="px-6 py-4">{{ item.quantity }}</td>
+    <td class="px-6 py-4">${{ item.unit_price }}</td>
+    <td class="px-6 py-4">${{ item.discount_amount }}</td>
+    <td class="px-6 py-4">${{ item.subtotal }}</td>
+</tr>
