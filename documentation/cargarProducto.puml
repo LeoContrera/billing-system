@@ -1,0 +1,35 @@
+@startuml cargarProducto
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+
+actor "Cajero" as C
+participant ":AppVentas" as V
+participant "catálogo:Catalogo" as Cat
+participant "l:LineaVenta" as L
+participant "ventaActual:Venta" as VA
+
+Note over C, V: El cajero está en la pantalla de registro
+C -> V : ingresarProducto(sku, cantidad)
+
+activate V
+    V -> Cat : p = obtenerProducto(sku)
+    activate Cat
+    Cat --> V : objeto Producto (p)
+    deactivate Cat
+
+    V -> L** : crear(p, cantidad)
+    activate L
+    Note right of L: Se copian atributos de 'p'\n(precio, nombre, sku)
+    L --> V : objeto LineaVenta (l)
+    deactivate L
+
+    V -> VA : agregarLinea(l)
+    activate VA
+    VA -> VA : calcularTotal()
+    VA --> V : estado actualizado
+    deactivate VA
+
+    V --> C : mostrarDatos(p.nombre, p.precio, l.subtotal, VA.total)
+deactivate V
+
+@enduml
