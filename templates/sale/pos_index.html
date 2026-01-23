@@ -172,6 +172,42 @@
         <div class="flex-1 overflow-y-auto bg-gray-50">
             <div class="p-8 space-y-6">
 
+                <!-- Receipt Type Selector -->
+                <section class="card p-6 shadow-float bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-xs uppercase tracking-wider text-indigo-600 font-semibold mb-1">Tipo de Comprobante</div>
+                            <div class="text-3xl font-black text-indigo-900" x-text="receiptType"></div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button
+                                @click="receiptType = 'Ticket Común'"
+                                :class="receiptType === 'Ticket Común' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+                                class="btn px-4 py-2 rounded-lg text-sm font-semibold">
+                                Ticket
+                            </button>
+                            <button
+                                @click="receiptType = 'Factura A'"
+                                :class="receiptType === 'Factura A' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+                                class="btn px-4 py-2 rounded-lg text-sm font-semibold">
+                                Factura A
+                            </button>
+                            <button
+                                @click="receiptType = 'Factura B'"
+                                :class="receiptType === 'Factura B' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+                                class="btn px-4 py-2 rounded-lg text-sm font-semibold">
+                                Factura B
+                            </button>
+                            <button
+                                @click="receiptType = 'Factura C'"
+                                :class="receiptType === 'Factura C' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+                                class="btn px-4 py-2 rounded-lg text-sm font-semibold">
+                                Factura C
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Customer Details Card -->
                 <section class="card p-6 shadow-float">
                     <div class="flex items-center justify-between mb-6">
@@ -217,44 +253,52 @@
                         <table class="w-full">
                             <thead>
                                 <tr class="table-header">
-                                    <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">SKU</th>
-                                    <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">Descripción</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Cantidad</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Precio Unit.</th>
-                                    <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Subtotal</th>
-                                    <th class="px-6 py-4"></th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">SKU</th>
+                                    <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">Descripción</th>
+                                    <th class="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Cant.</th>
+                                    <th class="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Precio Unit.</th>
+                                    <th class="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Desc.</th>
+                                    <th class="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Subtotal</th>
+                                    <th class="px-4 py-4"></th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white">
                                 <template x-for="(item, index) in lineItems" :key="index">
                                     <tr class="table-row animate-slide-in">
-                                        <td class="px-6 py-4">
+                                        <td class="px-4 py-4">
                                             <span class="font-mono text-sm font-medium text-amber-600" x-text="item.sku"></span>
                                         </td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-4 py-4">
                                             <span class="text-sm font-medium text-gray-900" x-text="item.description"></span>
                                         </td>
-                                        <td class="px-6 py-4 text-right">
+                                        <td class="px-4 py-4 text-right">
                                             <span class="font-mono text-sm font-semibold text-gray-900" x-text="item.quantity"></span>
                                         </td>
-                                        <td class="px-6 py-4 text-right">
+                                        <td class="px-4 py-4 text-right">
                                             <span class="font-mono text-sm text-gray-700" x-text="formatCurrency(item.unitPrice)"></span>
                                         </td>
-                                        <td class="px-6 py-4 text-right">
+                                        <td class="px-4 py-4 text-right">
+                                            <span
+                                                class="font-mono text-sm font-semibold"
+                                                :class="item.discountAmount > 0 ? 'text-amber-600' : 'text-gray-400'"
+                                                x-text="item.discountAmount > 0 ? formatCurrency(item.discountAmount) : '-'">
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 text-right">
                                             <span class="font-mono text-base font-bold text-gray-900" x-text="formatCurrency(item.subtotal)"></span>
                                         </td>
-                                        <td class="px-6 py-4 text-right">
+                                        <td class="px-4 py-4 text-right">
                                             <button
                                                 @click="removeLineItem(index)"
                                                 class="text-red-600 hover:text-red-700 transition-colors text-sm font-semibold">
-                                                Eliminar
+                                                ✕
                                             </button>
                                         </td>
                                     </tr>
                                 </template>
 
                                 <tr x-show="lineItems.length === 0">
-                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500 text-sm">
+                                    <td colspan="7" class="px-6 py-12 text-center text-gray-500 text-sm">
                                         No hay productos agregados
                                     </td>
                                 </tr>
@@ -277,20 +321,22 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <button
-                            @click="applyUnitDiscount()"
-                            class="btn py-4 bg-white border border-gray-300 hover:border-amber-500 rounded-lg text-sm font-semibold text-gray-700 hover:text-amber-600">
-                            Descuento por Unidad
+                            @click="openUnitDiscountModal()"
+                            :disabled="lineItems.length === 0"
+                            class="btn py-4 bg-white border border-gray-300 hover:border-amber-500 rounded-lg text-sm font-semibold text-gray-700 hover:text-amber-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Descuento por Producto
                         </button>
                         <button
-                            @click="applyGlobalDiscount()"
-                            class="btn py-4 bg-white border border-gray-300 hover:border-amber-500 rounded-lg text-sm font-semibold text-gray-700 hover:text-amber-600">
-                            Descuento Total
+                            @click="openGlobalDiscountModal()"
+                            :disabled="lineItems.length === 0"
+                            class="btn py-4 bg-white border border-gray-300 hover:border-amber-500 rounded-lg text-sm font-semibold text-gray-700 hover:text-amber-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Descuento Global (%)
                         </button>
                     </div>
 
-                    <div x-show="globalDiscount > 0" class="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <div x-show="globalDiscountPercentage > 0" class="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
                         <div class="flex items-center justify-between">
-                            <span class="text-sm text-amber-700 font-medium">Descuento global aplicado</span>
+                            <span class="text-sm text-amber-700 font-medium">Descuento global: <span x-text="globalDiscountPercentage"></span>%</span>
                             <span class="font-mono font-bold text-amber-700" x-text="formatCurrency(globalDiscount)"></span>
                         </div>
                     </div>
@@ -321,17 +367,41 @@
 
                     <div class="space-y-3">
                         <template x-for="(payment, index) in payments" :key="index">
-                            <div class="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200 animate-slide-in">
-                                <div class="flex-1">
-                                    <div class="text-sm font-semibold text-gray-900" x-text="payment.method"></div>
-                                    <div class="text-xs text-gray-600 mt-0.5">Registrado</div>
+                            <div class="p-4 bg-green-50 rounded-lg border border-green-200 animate-slide-in">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-semibold text-gray-900" x-text="payment.method"></div>
+                                        <div class="text-xs text-gray-600 mt-0.5">
+                                            <template x-if="payment.cardType">
+                                                <span>
+                                                    <span x-text="payment.cardType"></span>
+                                                    <template x-if="payment.installments > 1">
+                                                        <span> · <span x-text="payment.installments"></span> cuotas</span>
+                                                    </template>
+                                                    <template x-if="payment.interestRate > 0">
+                                                        <span> · <span x-text="payment.interestRate"></span>% interés</span>
+                                                    </template>
+                                                </span>
+                                            </template>
+                                            <template x-if="!payment.cardType">
+                                                <span>Registrado</span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-mono text-lg font-bold text-green-600" x-text="formatCurrency(payment.totalAmount)"></div>
+                                        <template x-if="payment.interestRate > 0">
+                                            <div class="text-xs text-gray-600">
+                                                Base: <span class="font-mono" x-text="formatCurrency(payment.amount)"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <button
+                                        @click="removePayment(index)"
+                                        class="text-red-600 hover:text-red-700 transition-colors text-xs font-semibold">
+                                        ✕
+                                    </button>
                                 </div>
-                                <div class="font-mono text-lg font-bold text-green-600" x-text="formatCurrency(payment.amount)"></div>
-                                <button
-                                    @click="removePayment(index)"
-                                    class="text-red-600 hover:text-red-700 transition-colors text-xs font-semibold">
-                                    ✕
-                                </button>
                             </div>
                         </template>
 
@@ -399,14 +469,16 @@
         @click.self="showPaymentModal = false"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
         style="display: none;">
-        <div class="card p-8 max-w-md w-full animate-slide-in shadow-float-lg" @click.stop>
+        <div class="card p-8 max-w-lg w-full animate-slide-in shadow-float-lg max-h-[90vh] overflow-y-auto" @click.stop>
             <h3 class="text-xl font-bold mb-6 text-blue-600">Agregar Pago</h3>
 
             <div class="space-y-4">
+                <!-- Payment Method -->
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Método de Pago</label>
                     <select
                         x-model="newPayment.method"
+                        @change="resetPaymentDetails()"
                         class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900">
                         <option value="EFECTIVO">Efectivo</option>
                         <option value="DÉBITO">Tarjeta de Débito</option>
@@ -415,13 +487,69 @@
                     </select>
                 </div>
 
+                <!-- Card Type (only for credit/debit cards) -->
+                <div x-show="newPayment.method === 'DÉBITO' || newPayment.method === 'CRÉDITO'" class="animate-slide-in">
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Tipo de Tarjeta</label>
+                    <select
+                        x-model="newPayment.cardType"
+                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900">
+                        <option value="">Seleccionar...</option>
+                        <option value="VISA">VISA</option>
+                        <option value="Mastercard">Mastercard</option>
+                        <option value="American Express">American Express</option>
+                        <option value="Cabal">Cabal</option>
+                        <option value="Naranja">Naranja</option>
+                        <option value="Maestro">Maestro</option>
+                        <option value="Otra">Otra</option>
+                    </select>
+                </div>
+
+                <!-- Installments (only for credit cards) -->
+                <div x-show="newPayment.method === 'CRÉDITO'" class="animate-slide-in">
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Cuotas</label>
+                    <select
+                        x-model="newPayment.installments"
+                        @change="calculateInterest()"
+                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900">
+                        <option value="1">1 cuota (sin interés)</option>
+                        <option value="3">3 cuotas</option>
+                        <option value="6">6 cuotas</option>
+                        <option value="9">9 cuotas</option>
+                        <option value="12">12 cuotas</option>
+                        <option value="18">18 cuotas</option>
+                        <option value="24">24 cuotas</option>
+                    </select>
+                </div>
+
+                <!-- Interest Rate (only for credit cards with installments > 1) -->
+                <div x-show="newPayment.method === 'CRÉDITO' && newPayment.installments > 1" class="animate-slide-in">
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Tasa de Interés (%)</label>
+                    <div class="relative">
+                        <input
+                            type="number"
+                            x-model="newPayment.interestRate"
+                            @input="calculateInterest()"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm font-mono text-gray-900"
+                            placeholder="0.00">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">%</span>
+                    </div>
+                    <div class="mt-1 text-xs text-gray-600">
+                        Tasa mensual aplicada al monto base
+                    </div>
+                </div>
+
+                <!-- Amount -->
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Monto</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Monto Base</label>
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">$</span>
                         <input
                             type="number"
                             x-model="newPayment.amount"
+                            @input="calculateInterest()"
                             step="0.01"
                             class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pl-8 text-sm font-mono text-gray-900"
                             placeholder="0.00">
@@ -431,16 +559,152 @@
                     </div>
                 </div>
 
+                <!-- Total with Interest (only if interest applies) -->
+                <div x-show="newPayment.interestRate > 0 && newPayment.installments > 1" class="p-4 bg-blue-50 rounded-lg border border-blue-200 animate-slide-in">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-xs text-blue-700 font-medium uppercase tracking-wide">Total con Interés</div>
+                            <div class="text-xs text-blue-600 mt-1">
+                                <span x-text="newPayment.installments"></span> cuotas de
+                                <span class="font-mono font-semibold" x-text="formatCurrency(newPayment.totalAmount / newPayment.installments)"></span>
+                            </div>
+                        </div>
+                        <div class="font-mono text-2xl font-black text-blue-700" x-text="formatCurrency(newPayment.totalAmount)"></div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
                 <div class="flex gap-3 mt-6">
                     <button
-                        @click="showPaymentModal = false"
+                        @click="closePaymentModal()"
                         class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50">
                         Cancelar
                     </button>
                     <button
                         @click="addPayment()"
-                        class="btn flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm">
+                        :disabled="!isPaymentValid()"
+                        class="btn flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                         Agregar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Discount Modal -->
+    <div
+        x-show="showGlobalDiscountModal"
+        x-cloak
+        @click.self="showGlobalDiscountModal = false"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        style="display: none;">
+        <div class="card p-8 max-w-md w-full animate-slide-in shadow-float-lg" @click.stop>
+            <h3 class="text-xl font-bold mb-6 text-amber-600">Descuento Global</h3>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Porcentaje de Descuento</label>
+                    <div class="relative">
+                        <input
+                            type="number"
+                            x-model="tempGlobalDiscountPercentage"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm font-mono text-gray-900"
+                            placeholder="0.00">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">%</span>
+                    </div>
+                    <div class="mt-2 text-xs text-gray-600">
+                        Subtotal: <span class="font-mono font-semibold" x-text="formatCurrency(calculateSubtotal())"></span>
+                    </div>
+                    <div x-show="tempGlobalDiscountPercentage > 0" class="mt-1 text-sm font-semibold text-amber-700">
+                        Descuento a aplicar: <span class="font-mono" x-text="formatCurrency(calculateSubtotal() * tempGlobalDiscountPercentage / 100)"></span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button
+                        @click="showGlobalDiscountModal = false; tempGlobalDiscountPercentage = 0"
+                        class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button
+                        @click="applyGlobalDiscount()"
+                        class="btn flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-sm">
+                        Aplicar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unit Discount Modal -->
+    <div
+        x-show="showUnitDiscountModal"
+        x-cloak
+        @click.self="showUnitDiscountModal = false"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        style="display: none;">
+        <div class="card p-8 max-w-2xl w-full animate-slide-in shadow-float-lg" @click.stop>
+            <h3 class="text-xl font-bold mb-6 text-amber-600">Descuento por Producto</h3>
+
+            <div class="space-y-4">
+                <!-- Product Selection -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wide">Seleccionar Productos</label>
+                    <div class="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
+                        <template x-for="(item, index) in lineItems" :key="index">
+                            <label class="flex items-center gap-3 p-3 bg-white rounded border border-gray-200 hover:border-amber-300 cursor-pointer transition-colors">
+                                <input
+                                    type="checkbox"
+                                    :value="index"
+                                    x-model="selectedProductsForDiscount"
+                                    class="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500">
+                                <div class="flex-1">
+                                    <div class="text-sm font-semibold text-gray-900" x-text="item.description"></div>
+                                    <div class="text-xs text-gray-600">
+                                        <span x-text="item.sku"></span> -
+                                        <span x-text="formatCurrency(item.unitPrice)"></span> ×
+                                        <span x-text="item.quantity"></span>
+                                    </div>
+                                </div>
+                                <div class="font-mono text-sm font-bold text-gray-900" x-text="formatCurrency(item.quantity * item.unitPrice)"></div>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Discount Percentage -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Porcentaje de Descuento</label>
+                    <div class="relative">
+                        <input
+                            type="number"
+                            x-model="tempUnitDiscountPercentage"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm font-mono text-gray-900"
+                            placeholder="0.00">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">%</span>
+                    </div>
+                    <div x-show="selectedProductsForDiscount.length > 0 && tempUnitDiscountPercentage > 0" class="mt-2 text-sm text-gray-600">
+                        <span x-text="selectedProductsForDiscount.length"></span> producto(s) seleccionado(s)
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button
+                        @click="showUnitDiscountModal = false; selectedProductsForDiscount = []; tempUnitDiscountPercentage = 0"
+                        class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button
+                        @click="applyUnitDiscount()"
+                        :disabled="selectedProductsForDiscount.length === 0 || tempUnitDiscountPercentage <= 0"
+                        class="btn flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        Aplicar Descuento
                     </button>
                 </div>
             </div>
@@ -450,6 +714,9 @@
     <script>
         function posApp() {
             return {
+                // Receipt type
+                receiptType: 'Ticket Común',
+
                 // Customer data
                 customer: {
                     firstName: '{{ sale.customer.first_name|default:"" }}',
@@ -474,7 +741,8 @@
                 ],
 
                 // Global discount
-                globalDiscount: {{ sale.global_discount_amount|default:"0" }},
+                globalDiscountPercentage: 0,
+                globalDiscount: 0,
 
                 // Payments
                 payments: [
@@ -486,23 +754,38 @@
                     {% endfor %}
                 ],
 
-                // Modal state
+                // Modal states
                 showPaymentModal: false,
+                showGlobalDiscountModal: false,
+                showUnitDiscountModal: false,
+
+                // Modal data
                 newPayment: {
                     method: 'EFECTIVO',
-                    amount: 0
+                    amount: 0,
+                    cardType: '',
+                    installments: 1,
+                    interestRate: 0,
+                    totalAmount: 0
                 },
+                tempGlobalDiscountPercentage: 0,
+                tempUnitDiscountPercentage: 0,
+                selectedProductsForDiscount: [],
 
-                // Methods
+                // Calculation methods
                 calculateSubtotal() {
                     return this.lineItems.reduce((sum, item) => sum + item.subtotal, 0);
                 },
 
                 calculateTotal() {
-                    return Math.max(0, this.calculateSubtotal() - this.globalDiscount);
+                    const subtotal = this.calculateSubtotal();
+                    this.globalDiscount = subtotal * (this.globalDiscountPercentage / 100);
+                    return Math.max(0, subtotal - this.globalDiscount);
                 },
 
                 calculateTotalPaid() {
+                    // Use base amount (without interest) for payment calculation
+                    // Interest is additional and charged by the payment processor
                     return this.payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
                 },
 
@@ -522,19 +805,74 @@
                     }).format(value);
                 },
 
+                // Payment methods
                 openPaymentModal() {
                     this.newPayment.amount = Math.max(0, this.calculateRemaining());
+                    this.newPayment.totalAmount = this.newPayment.amount;
                     this.showPaymentModal = true;
                 },
 
+                closePaymentModal() {
+                    this.showPaymentModal = false;
+                    this.newPayment = {
+                        method: 'EFECTIVO',
+                        amount: 0,
+                        cardType: '',
+                        installments: 1,
+                        interestRate: 0,
+                        totalAmount: 0
+                    };
+                },
+
+                resetPaymentDetails() {
+                    // Reset card-specific fields when payment method changes
+                    this.newPayment.cardType = '';
+                    this.newPayment.installments = 1;
+                    this.newPayment.interestRate = 0;
+                    this.calculateInterest();
+                },
+
+                calculateInterest() {
+                    const amount = parseFloat(this.newPayment.amount) || 0;
+                    const rate = parseFloat(this.newPayment.interestRate) || 0;
+                    const installments = parseInt(this.newPayment.installments) || 1;
+
+                    if (this.newPayment.method === 'CRÉDITO' && installments > 1 && rate > 0) {
+                        // Calculate total with compound interest
+                        // Formula: Total = Amount * (1 + rate/100)^installments
+                        // This is a simplified model; real-world may use different formulas
+                        const interestMultiplier = Math.pow(1 + (rate / 100), installments);
+                        this.newPayment.totalAmount = amount * interestMultiplier;
+                    } else {
+                        this.newPayment.totalAmount = amount;
+                    }
+                },
+
+                isPaymentValid() {
+                    const amount = parseFloat(this.newPayment.amount) || 0;
+                    if (amount <= 0) return false;
+
+                    // Validate card type if credit/debit card
+                    if ((this.newPayment.method === 'DÉBITO' || this.newPayment.method === 'CRÉDITO') && !this.newPayment.cardType) {
+                        return false;
+                    }
+
+                    return true;
+                },
+
                 addPayment() {
-                    if (this.newPayment.amount > 0) {
-                        this.payments.push({
+                    if (this.isPaymentValid()) {
+                        const payment = {
                             method: this.newPayment.method,
-                            amount: parseFloat(this.newPayment.amount)
-                        });
-                        this.showPaymentModal = false;
-                        this.newPayment = { method: 'EFECTIVO', amount: 0 };
+                            amount: parseFloat(this.newPayment.amount),
+                            totalAmount: parseFloat(this.newPayment.totalAmount),
+                            cardType: this.newPayment.cardType || null,
+                            installments: parseInt(this.newPayment.installments) || 1,
+                            interestRate: parseFloat(this.newPayment.interestRate) || 0
+                        };
+
+                        this.payments.push(payment);
+                        this.closePaymentModal();
                     }
                 },
 
@@ -542,6 +880,7 @@
                     this.payments.splice(index, 1);
                 },
 
+                // Product methods
                 removeLineItem(index) {
                     this.lineItems.splice(index, 1);
                 },
@@ -560,22 +899,51 @@
                     });
                 },
 
-                applyUnitDiscount() {
-                    const discount = parseFloat(prompt('Ingrese el descuento por unidad:') || 0);
-                    if (discount > 0 && this.lineItems.length > 0) {
-                        this.lineItems[this.lineItems.length - 1].discountAmount = discount;
-                    }
+                // Discount methods
+                openGlobalDiscountModal() {
+                    this.tempGlobalDiscountPercentage = this.globalDiscountPercentage;
+                    this.showGlobalDiscountModal = true;
                 },
 
                 applyGlobalDiscount() {
-                    const discount = parseFloat(prompt('Ingrese el descuento total:') || 0);
-                    if (discount >= 0) {
-                        this.globalDiscount = discount;
+                    if (this.tempGlobalDiscountPercentage >= 0 && this.tempGlobalDiscountPercentage <= 100) {
+                        this.globalDiscountPercentage = parseFloat(this.tempGlobalDiscountPercentage);
+                        this.showGlobalDiscountModal = false;
+                        this.tempGlobalDiscountPercentage = 0;
                     }
                 },
 
+                openUnitDiscountModal() {
+                    this.selectedProductsForDiscount = [];
+                    this.tempUnitDiscountPercentage = 0;
+                    this.showUnitDiscountModal = true;
+                },
+
+                applyUnitDiscount() {
+                    if (this.selectedProductsForDiscount.length > 0 && this.tempUnitDiscountPercentage > 0) {
+                        this.selectedProductsForDiscount.forEach(index => {
+                            const item = this.lineItems[index];
+                            const baseAmount = item.quantity * item.unitPrice;
+                            item.discountAmount = baseAmount * (this.tempUnitDiscountPercentage / 100);
+                        });
+                        this.showUnitDiscountModal = false;
+                        this.selectedProductsForDiscount = [];
+                        this.tempUnitDiscountPercentage = 0;
+                    }
+                },
+
+                // Other methods
                 viewDetails() {
                     alert('Funcionalidad de ver detalles - Por implementar');
+                },
+
+                resetSale() {
+                    this.receiptType = 'Ticket Común';
+                    this.customer = { firstName: '', lastName: '', phone: '' };
+                    this.lineItems = [];
+                    this.globalDiscountPercentage = 0;
+                    this.globalDiscount = 0;
+                    this.payments = [];
                 },
 
                 finalizeSale() {
@@ -583,6 +951,8 @@
                         if (confirm('¿Confirmar finalización de venta?')) {
                             alert('Venta finalizada con éxito');
                             // Submit to backend
+                            // After successful submission:
+                            this.resetSale();
                         }
                     }
                 }
