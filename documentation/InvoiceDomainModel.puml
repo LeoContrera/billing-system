@@ -1,0 +1,46 @@
+@startuml "Modelo de Dominio - Sistema de Facturación ARCA"
+skinparam style strictuml
+left to right direction
+
+abstract class Comprobante {
+    - fecha: Date
+    - numero: Integer
+    - puntoVenta: Integer
+    - cae: String
+    - fechaVencimientoCae: Date
+    + calcularTotal()
+}
+
+class FacturaA {
+    - netoGravado: Float
+    - alicuotaIva: Float
+    - impuestoLiquidado: Float
+    + liquidarIva()
+}
+
+class FacturaB {
+    - montoTotal: Float
+}
+
+class FacturaC {
+    - montoTotal: Float
+}
+
+class NotaCredito {
+    - motivo: String
+}
+
+class Receptor {
+    - cuit: String
+    - condicionIva: String
+    - razonSocial: String
+}
+
+Comprobante <|-- FacturaA
+Comprobante <|-- FacturaB
+Comprobante <|-- FacturaC
+Comprobante <|-- NotaCredito
+Comprobante "0..*" --> "1" Receptor : destinado a >
+
+note bottom of FacturaA : Discrimina IVA según\nart. 37 de la Ley de IVA.
+@enduml

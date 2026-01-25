@@ -39,12 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_afip',
     'users',
     'customers',
     'products',
     'inventory',
     'sale',
     'payments',
+    'invoices',
 ]
 
 MIDDLEWARE = [
@@ -126,6 +128,29 @@ STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'users.User'
 
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 STATICFILES_DIRS = [
     BASE_DIR.parent / 'static',
 ]
+
+# AFIP Configuration
+AFIP_DEBUG_MODE = os.getenv('AFIP_DEBUG_MODE', 'True').lower() == 'true'
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'invoices': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
