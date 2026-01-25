@@ -115,6 +115,7 @@ class SaleLineItem(models.Model):
         quantity: Cantidad vendida
         unit_price: Precio unitario
         discount_amount: Descuento aplicado a esta línea
+        vat_rate: Tasa de IVA (desnormalizado para historial)
 
     Properties:
         subtotal: Fórmula: (cantidad × precio) - descuento
@@ -124,7 +125,7 @@ class SaleLineItem(models.Model):
 
     Patrones:
         - CASCADE: Si se borra venta, se borran items (relación compositiva)
-        - Desnormalización: product_name se guarda para mantener historial
+        - Desnormalización: product_name, vat_rate se guardan para mantener historial
         - SET_NULL para product: mantiene historial aunque producto se elimine
     """
     sale = models.ForeignKey(
@@ -154,6 +155,12 @@ class SaleLineItem(models.Model):
         max_digits=10,
         decimal_places=2,
         default=Decimal('0.00')
+    )
+    vat_rate = models.CharField(
+        "Tasa de IVA",
+        max_length=5,
+        default='21.00',
+        help_text="Desnormalizado para historial fiscal"
     )
 
     class Meta:

@@ -143,6 +143,7 @@ class SaleService:
             sku=product_data.sku,
             quantity=quantity,
             unit_price=product_data.price,
+            vat_rate=product.vat_rate,  # Desnormalizar para historial fiscal
         )
 
     @staticmethod

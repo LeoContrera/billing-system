@@ -1,0 +1,50 @@
+@startuml SSD_Facturacion_PDF_Email
+skinparam style strictuml
+actor Usuario
+participant "Vista Venta" as Vista
+participant "Servicio Facturacion" as Svc
+participant "ORM: afip.Receipt" as Receipt
+participant "Sistema Externo: ARCA" as ARCA
+participant "Motor PDF" as PDF
+participant "Servidor SMTP" as Mail
+
+title Secuencia: Facturación, PDF y Envío
+
+Usuario -> Vista: Finalizar Venta()
+activate Vista
+
+Vista -> Svc: procesar_venta_afip(venta)
+activate Svc
+
+group Transacción Lógica
+    Svc -> Receipt: create(datos, vat)
+    Svc -> Receipt: validate()
+    activate Receipt
+        Receipt -> ARCA: FECAESolicitar
+        ARCA --> Receipt: CAE Aprobado
+    deactivate Receipt
+
+    alt Validación Exitosa
+        note right of Svc: Inicio Fase Post-Procesamiento
+        
+        Svc -> Receipt: create_pdf()
+        activate Receipt
+            Receipt -> PDF: Renderizar Template
+            PDF --> Receipt: Archivo PDF (Bytes)
+        deactivate Receipt
+        
+        Svc -> Mail: send_email(to=cliente, attach=PDF)
+        activate Mail
+            Mail --> Svc: OK (Enviado)
+        deactivate Mail
+        
+        Svc --> Vista: Retorno Éxito (Venta Cerrada)
+    else Error AFIP
+        Svc -> Receipt: delete/log
+        Svc --> Vista: Excepción (Mostrar error al usuario)
+    end
+end
+
+deactivate Svc
+deactivate Vista
+@enduml

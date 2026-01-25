@@ -95,6 +95,67 @@ def emit_cae(request, invoice_id):
 
 
 @login_required
+@require_http_methods(["POST"])
+def process_sale_afip(request, sale_id):
+    """
+    Orquestador completo: Crear factura, emitir CAE, generar PDF y enviar email.
+
+    POST /invoices/process-sale/<sale_id>/
+
+    Este endpoint reemplaza el flujo de 2 pasos (create + emit_cae) por un único
+    método que ejecuta todo el proceso de facturación electrónica.
+
+    Returns:
+        JSON: {
+            'success': True,
+            'invoice_id': int,
+            'cae': str,
+            'display_number': str,
+            'email_sent': bool,
+            'error': str (opcional - si email falló)
+        }
+
+    Errors:
+        400: Validación fallida (sale no COMPLETED, error AFIP)
+        404: Sale no encontrado
+
+    Notas:
+        - Si el email falla, el CAE ya fue autorizado y NO se hace rollback
+        - Se retorna success=True pero email_sent=False con mensaje de error
+    """
+    try:
+        result = InvoiceService.procesar_venta_afip(sale_id, request.user)
+
+        response_data = {
+            'success': result['success'],
+            'invoice_id': result['invoice'].id,
+            'receipt_type': result['invoice'].get_receipt_type_display(),
+            'cae': result['cae'],
+            'cae_expiration': str(result['invoice'].cae_expiration),
+            'display_number': result['display_number'],
+            'total_amount': str(result['invoice'].total_amount),
+            'email_sent': result['email_sent']
+        }
+
+        # Si email falló, incluir mensaje de advertencia
+        if result.get('error'):
+            response_data['error'] = result['error']
+            logger.warning(
+                f"Factura {result['invoice'].id} autorizada pero email no enviado: "
+                f"{result['error']}"
+            )
+
+        return JsonResponse(response_data)
+
+    except ValidationError as e:
+        logger.warning(f"Error procesando venta {sale_id} con AFIP: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Error inesperado procesando venta {sale_id} con AFIP: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'Error interno del servidor'}, status=500)
+
+
+@login_required
 def invoice_details(request, invoice_id):
     """
     Obtiene detalles de una factura.
