@@ -68,16 +68,25 @@ def product_create(request):
         # Parsear precio
         try:
             price = Decimal(price_str)
+            # Validar rango de precio
+            if price > Decimal("9999999999999.99"):
+                raise ValidationError("El precio excede el límite máximo (9.999.999.999.999,99)")
+            if price < 0:
+                raise ValidationError("El precio no puede ser negativo")
         except (InvalidOperation, ValueError):
-            raise ValidationError("Precio inválido")
+            raise ValidationError("Precio inválido. Use formato numérico (ej: 1234.56)")
 
         # Parsear costo (opcional)
         cost = None
         if cost_str:
             try:
                 cost = Decimal(cost_str)
+                if cost > Decimal("9999999999999.99"):
+                    raise ValidationError("El costo excede el límite máximo (9.999.999.999.999,99)")
+                if cost < 0:
+                    raise ValidationError("El costo no puede ser negativo")
             except (InvalidOperation, ValueError):
-                raise ValidationError("Costo inválido")
+                raise ValidationError("Costo inválido. Use formato numérico (ej: 1234.56)")
 
         # Crear producto
         ProductService.create_product(
@@ -92,6 +101,8 @@ def product_create(request):
 
     except ValidationError as e:
         messages.error(request, str(e))
+    except Exception as e:
+        messages.error(request, f"Error inesperado: {str(e)}")
 
     # Redirigir a la lista
     return redirect("products:list")
@@ -116,16 +127,24 @@ def product_update(request, sku):
         if price_str:
             try:
                 price = Decimal(price_str)
+                if price > Decimal("9999999999999.99"):
+                    raise ValidationError("El precio excede el límite máximo (9.999.999.999.999,99)")
+                if price < 0:
+                    raise ValidationError("El precio no puede ser negativo")
             except (InvalidOperation, ValueError):
-                raise ValidationError("Precio inválido")
+                raise ValidationError("Precio inválido. Use formato numérico (ej: 1234.56)")
 
         # Parsear costo
         cost = None
         if cost_str:
             try:
                 cost = Decimal(cost_str)
+                if cost > Decimal("9999999999999.99"):
+                    raise ValidationError("El costo excede el límite máximo (9.999.999.999.999,99)")
+                if cost < 0:
+                    raise ValidationError("El costo no puede ser negativo")
             except (InvalidOperation, ValueError):
-                raise ValidationError("Costo inválido")
+                raise ValidationError("Costo inválido. Use formato numérico (ej: 1234.56)")
 
         # Actualizar producto
         ProductService.update_product(
@@ -140,6 +159,8 @@ def product_update(request, sku):
 
     except ValidationError as e:
         messages.error(request, str(e))
+    except Exception as e:
+        messages.error(request, f"Error inesperado: {str(e)}")
 
     return redirect("products:list")
 

@@ -45,13 +45,14 @@ class Product(models.Model):
     description = models.TextField("Descripción", blank=True)
     price = models.DecimalField(
         "Precio de Venta",
-        max_digits=10,
+        max_digits=15,
         decimal_places=2,
         validators=[MinValueValidator(Decimal("0.00"))],
+        help_text="Precio máximo: 9.999.999.999.999,99",
     )
     cost = models.DecimalField(
         "Costo",
-        max_digits=10,
+        max_digits=15,
         decimal_places=2,
         null=True,
         blank=True,

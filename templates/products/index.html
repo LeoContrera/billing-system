@@ -6,28 +6,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Productos</title>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Custom Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <!-- HTMX -->
     <script src="{% static 'js/htmx.min.js' %}"></script>
 
-    <style>
-        [x-cloak] { display: none !important; }
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
 
-        /* Design System Styles */
-        .card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #f59e0b;
+            --secondary-dark: #d97706;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        * {
+            font-variant-numeric: tabular-nums;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+        }
+
+        .font-mono {
+            font-family: 'IBM Plex Mono', monospace;
         }
 
         .shadow-float {
@@ -38,19 +67,14 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .shadow-float-xl {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        .animate-slide-in {
-            animation: slideIn 0.3s ease-out;
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .btn {
@@ -68,57 +92,197 @@
             transform: translateY(0);
         }
 
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .table-header {
-            background: #f3f4f6;
-            border-bottom: 2px solid #2563eb;
+            background: var(--gray-100);
+            border-bottom: 2px solid var(--primary);
         }
 
         .table-row {
-            border-bottom: 1px solid #e5e7eb;
-            transition: background 0.15s;
+            border-bottom: 1px solid var(--gray-200);
+            transition: all 0.15s ease;
         }
 
         .table-row:hover {
-            background: #f9fafb;
+            background: var(--gray-50);
+            transform: translateX(4px);
         }
 
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        .card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-scale-in {
+            animation: scaleIn 0.2s ease-out;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
+
+        .htmx-indicator {
+            display: none;
+        }
+
+        .htmx-request .htmx-indicator {
+            display: flex;
+        }
+
+        /* Gradient background */
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Shimmer effect for loading */
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        .shimmer {
+            animation: shimmer 2s infinite;
+            background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+            background-size: 1000px 100%;
         }
     </style>
 </head>
-<body class="bg-gray-50 font-sans min-h-full" x-data="productManager()">
-    <div class="max-w-7xl mx-auto p-8">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-black text-gray-900">Gestión de Productos</h1>
-                <p class="text-sm text-gray-600 mt-2">Administra el catálogo de productos del sistema</p>
+<body class="h-full antialiased" x-data="productManager()">
+    <!-- Header -->
+    <header class="border-b border-gray-200 bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 font-medium">Módulo</div>
+                    <div class="text-2xl font-black mt-0.5 text-gray-900">Productos</div>
+                </div>
+                <div class="h-8 w-px bg-gray-300"></div>
+                <div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 font-medium">Catálogo</div>
+                    <div class="text-base font-bold mt-0.5 text-blue-600">Sistema POS</div>
+                </div>
             </div>
-            <button
-                @click="openCreateModal()"
-                class="btn bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">
-                + Nuevo Producto
-            </button>
-        </div>
 
+            <a
+                href="/"
+                class="px-5 py-2 text-sm font-semibold text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg transition-colors">
+                Volver al inicio
+            </a>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto p-8 space-y-6">
         <!-- Messages -->
         {% if messages %}
-        <div class="mb-6 space-y-3">
+        <div class="space-y-3 animate-slide-in">
             {% for message in messages %}
             <div class="card p-4 shadow-float {% if message.tags == 'success' %}bg-green-50 border-green-200{% elif message.tags == 'error' %}bg-red-50 border-red-200{% else %}bg-blue-50 border-blue-200{% endif %}">
-                <p class="{% if message.tags == 'success' %}text-green-700{% elif message.tags == 'error' %}text-red-700{% else %}text-blue-700{% endif %} text-sm font-medium">
-                    {{ message }}
-                </p>
+                <div class="flex items-center gap-3">
+                    {% if message.tags == 'success' %}
+                    <svg class="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    {% elif message.tags == 'error' %}
+                    <svg class="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    {% endif %}
+                    <p class="{% if message.tags == 'success' %}text-green-700{% elif message.tags == 'error' %}text-red-700{% else %}text-blue-700{% endif %} text-sm font-semibold">
+                        {{ message }}
+                    </p>
+                </div>
             </div>
             {% endfor %}
         </div>
         {% endif %}
 
+        <!-- Quick Actions Header -->
+        <section class="card p-6 shadow-float bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-sm uppercase tracking-wider text-indigo-600 font-semibold mb-1">Gestión de Inventario</h1>
+                    <p class="text-2xl font-black text-indigo-900">Catálogo de Productos</p>
+                </div>
+                <button
+                    @click="openCreateModal()"
+                    class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-bold shadow-float">
+                    <span class="flex items-center gap-2">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Nuevo Producto
+                    </span>
+                </button>
+            </div>
+        </section>
+
         <!-- Search and Filters -->
-        <section class="card p-6 mb-6 shadow-float">
+        <section class="card p-6 shadow-float">
+            <h2 class="text-sm uppercase tracking-wider font-bold text-blue-600 mb-4">Filtros y Búsqueda</h2>
+
             <form
                 hx-get="{% url 'products:list' %}"
                 hx-target="#product-table"
@@ -131,12 +295,19 @@
                     <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
                         Buscar
                     </label>
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ search_query }}"
-                        placeholder="Buscar por SKU o nombre..."
-                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900">
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </span>
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ search_query }}"
+                            placeholder="Buscar por SKU o nombre..."
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 pl-10 text-sm text-gray-900 transition-all">
+                    </div>
                 </div>
 
                 <!-- Order By -->
@@ -151,8 +322,8 @@
                         <option value="-name" {% if order_by == '-name' %}selected{% endif %}>Nombre (Z-A)</option>
                         <option value="sku" {% if order_by == 'sku' %}selected{% endif %}>SKU (A-Z)</option>
                         <option value="-sku" {% if order_by == '-sku' %}selected{% endif %}>SKU (Z-A)</option>
-                        <option value="price" {% if order_by == 'price' %}selected{% endif %}>Precio (menor a mayor)</option>
-                        <option value="-price" {% if order_by == '-price' %}selected{% endif %}>Precio (mayor a menor)</option>
+                        <option value="price" {% if order_by == 'price' %}selected{% endif %}>Precio (↑)</option>
+                        <option value="-price" {% if order_by == '-price' %}selected{% endif %}>Precio (↓)</option>
                         <option value="-created_at" {% if order_by == '-created_at' %}selected{% endif %}>Más recientes</option>
                         <option value="created_at" {% if order_by == 'created_at' %}selected{% endif %}>Más antiguos</option>
                     </select>
@@ -160,25 +331,25 @@
 
                 <!-- Show Inactive -->
                 <div class="flex items-end">
-                    <label class="flex items-center space-x-2 cursor-pointer">
+                    <label class="flex items-center space-x-3 cursor-pointer group">
                         <input
                             type="checkbox"
                             name="show_inactive"
                             {% if show_inactive %}checked{% endif %}
-                            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
-                        <span class="text-sm font-medium text-gray-700">Mostrar inactivos</span>
+                            class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 transition-all">
+                        <span class="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">Mostrar inactivos</span>
                     </label>
                 </div>
             </form>
 
             <!-- Loading Indicator -->
             <div id="loading-indicator" class="htmx-indicator mt-4">
-                <div class="flex items-center text-blue-600 text-sm">
-                    <svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <div class="flex items-center text-blue-600 text-sm font-medium">
+                    <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Cargando...
+                    Cargando productos...
                 </div>
             </div>
         </section>
@@ -197,17 +368,24 @@
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
         style="display: none;">
 
-        <div class="card p-8 max-w-2xl w-full animate-slide-in shadow-float-lg overflow-y-auto max-h-[90vh]" @click.stop>
-            <h3 class="text-xl font-bold mb-6 text-blue-600" x-text="editMode ? 'Editar Producto' : 'Nuevo Producto'"></h3>
+        <div class="card p-8 max-w-2xl w-full animate-scale-in shadow-float-xl overflow-y-auto max-h-[90vh]" @click.stop>
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-black text-blue-600" x-text="editMode ? 'Editar Producto' : 'Nuevo Producto'"></h3>
+                <button @click="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
 
             <form :action="editMode ? `/products/${formData.sku}/update/` : '{% url 'products:create' %}'" method="POST">
                 {% csrf_token %}
 
-                <div class="space-y-4">
+                <div class="space-y-5">
                     <!-- SKU -->
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                            SKU *
+                        <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
+                            SKU <span class="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
@@ -216,88 +394,93 @@
                             :readonly="editMode"
                             required
                             :class="editMode ? 'bg-gray-100 cursor-not-allowed' : ''"
-                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-mono text-gray-900"
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm font-mono text-gray-900 transition-all"
                             placeholder="ABC123">
+                        <p class="mt-1 text-xs text-gray-500" x-show="!editMode">Código único del producto</p>
                     </div>
 
                     <!-- Name -->
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                            Nombre *
+                        <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
+                            Nombre <span class="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
                             name="name"
                             x-model="formData.name"
                             required
-                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900"
-                            placeholder="Nombre del producto">
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 transition-all"
+                            placeholder="Nombre descriptivo del producto">
                     </div>
 
                     <!-- Price & Cost -->
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                                Precio *
+                            <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
+                                Precio de Venta <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">$</span>
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold text-sm">$</span>
                                 <input
                                     type="number"
                                     name="price"
                                     x-model="formData.price"
                                     step="0.01"
                                     min="0"
+                                    max="9999999999999.99"
                                     required
-                                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 pl-8 text-sm font-mono text-gray-900"
+                                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pl-8 text-sm font-mono text-gray-900 transition-all"
                                     placeholder="0.00">
                             </div>
+                            <p class="mt-1 text-xs text-gray-500">Máximo: 9.999.999.999.999,99</p>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                            <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
                                 Costo
                             </label>
                             <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">$</span>
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold text-sm">$</span>
                                 <input
                                     type="number"
                                     name="cost"
                                     x-model="formData.cost"
                                     step="0.01"
                                     min="0"
-                                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 pl-8 text-sm font-mono text-gray-900"
+                                    max="9999999999999.99"
+                                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pl-8 text-sm font-mono text-gray-900 transition-all"
                                     placeholder="0.00">
                             </div>
+                            <p class="mt-1 text-xs text-gray-500">Opcional - Máximo: 9.999.999.999.999,99</p>
                         </div>
                     </div>
 
                     <!-- Description -->
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                        <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
                             Descripción
                         </label>
                         <textarea
                             name="description"
                             x-model="formData.description"
                             rows="3"
-                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900"
-                            placeholder="Descripción del producto"></textarea>
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900 transition-all resize-none"
+                            placeholder="Descripción detallada del producto (opcional)"></textarea>
                     </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex gap-3 mt-6">
+                <div class="flex gap-3 mt-8 pt-6 border-t border-gray-200">
                     <button
                         type="button"
                         @click="closeModal()"
-                        class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50">
+                        class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50 hover:border-gray-400">
                         Cancelar
                     </button>
                     <button
                         type="submit"
-                        class="btn flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm">
-                        <span x-text="editMode ? 'Actualizar' : 'Crear Producto'"></span>
+                        class="btn flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-bold text-sm shadow-float">
+                        <span x-text="editMode ? 'Actualizar Producto' : 'Crear Producto'"></span>
                     </button>
                 </div>
             </form>
@@ -305,6 +488,10 @@
     </div>
 
     <script>
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = document.querySelector('meta[name="csrf-token"]').content;
+        });
+
         function productManager() {
             return {
                 showModal: false,
@@ -337,7 +524,7 @@
 
                 closeModal() {
                     this.showModal = false;
-                    this.resetForm();
+                    setTimeout(() => this.resetForm(), 300);
                 },
 
                 resetForm() {
