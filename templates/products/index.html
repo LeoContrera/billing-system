@@ -378,7 +378,7 @@
                 </button>
             </div>
 
-            <form :action="editMode ? `/products/${formData.sku}/update/` : '{% url 'products:create' %}'" method="POST">
+            <form :action="editMode ? '/products/' + formData.sku + '/update/' : '{% url 'products:create' %}'" method="POST">
                 {% csrf_token %}
 
                 <div class="space-y-5">
