@@ -1,0 +1,356 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Productos</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- HTMX -->
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+
+        /* Design System Styles */
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+        }
+
+        .shadow-float {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .shadow-float-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .btn {
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .table-header {
+            background: #f3f4f6;
+            border-bottom: 2px solid #2563eb;
+        }
+
+        .table-row {
+            border-bottom: 1px solid #e5e7eb;
+            transition: background 0.15s;
+        }
+
+        .table-row:hover {
+            background: #f9fafb;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-full" x-data="productManager()">
+    <div class="max-w-7xl mx-auto p-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-black text-gray-900">Gestión de Productos</h1>
+                <p class="text-sm text-gray-600 mt-2">Administra el catálogo de productos del sistema</p>
+            </div>
+            <button
+                @click="openCreateModal()"
+                class="btn bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">
+                + Nuevo Producto
+            </button>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mb-6 space-y-3">
+            {% for message in messages %}
+            <div class="card p-4 shadow-float {% if message.tags == 'success' %}bg-green-50 border-green-200{% elif message.tags == 'error' %}bg-red-50 border-red-200{% else %}bg-blue-50 border-blue-200{% endif %}">
+                <p class="{% if message.tags == 'success' %}text-green-700{% elif message.tags == 'error' %}text-red-700{% else %}text-blue-700{% endif %} text-sm font-medium">
+                    {{ message }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Search and Filters -->
+        <section class="card p-6 mb-6 shadow-float">
+            <form
+                hx-get="{% url 'products:list' %}"
+                hx-target="#product-table"
+                hx-trigger="submit, change from:select, keyup delay:500ms from:input[name='search']"
+                hx-indicator="#loading-indicator"
+                class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                <!-- Search -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                        Buscar
+                    </label>
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ search_query }}"
+                        placeholder="Buscar por SKU o nombre..."
+                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900">
+                </div>
+
+                <!-- Order By -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                        Ordenar por
+                    </label>
+                    <select
+                        name="order_by"
+                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900">
+                        <option value="name" {% if order_by == 'name' %}selected{% endif %}>Nombre (A-Z)</option>
+                        <option value="-name" {% if order_by == '-name' %}selected{% endif %}>Nombre (Z-A)</option>
+                        <option value="sku" {% if order_by == 'sku' %}selected{% endif %}>SKU (A-Z)</option>
+                        <option value="-sku" {% if order_by == '-sku' %}selected{% endif %}>SKU (Z-A)</option>
+                        <option value="price" {% if order_by == 'price' %}selected{% endif %}>Precio (menor a mayor)</option>
+                        <option value="-price" {% if order_by == '-price' %}selected{% endif %}>Precio (mayor a menor)</option>
+                        <option value="-created_at" {% if order_by == '-created_at' %}selected{% endif %}>Más recientes</option>
+                        <option value="created_at" {% if order_by == 'created_at' %}selected{% endif %}>Más antiguos</option>
+                    </select>
+                </div>
+
+                <!-- Show Inactive -->
+                <div class="flex items-end">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            name="show_inactive"
+                            {% if show_inactive %}checked{% endif %}
+                            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                        <span class="text-sm font-medium text-gray-700">Mostrar inactivos</span>
+                    </label>
+                </div>
+            </form>
+
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="htmx-indicator mt-4">
+                <div class="flex items-center text-blue-600 text-sm">
+                    <svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Cargando...
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Table -->
+        <section class="card shadow-float overflow-hidden" id="product-table">
+            {% include 'products/_product_table.html' %}
+        </section>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div
+        x-show="showModal"
+        x-cloak
+        @click.self="closeModal()"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        style="display: none;">
+
+        <div class="card p-8 max-w-2xl w-full animate-slide-in shadow-float-lg overflow-y-auto max-h-[90vh]" @click.stop>
+            <h3 class="text-xl font-bold mb-6 text-blue-600" x-text="editMode ? 'Editar Producto' : 'Nuevo Producto'"></h3>
+
+            <form :action="editMode ? `/products/${formData.sku}/update/` : '{% url 'products:create' %}'" method="POST">
+                {% csrf_token %}
+
+                <div class="space-y-4">
+                    <!-- SKU -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                            SKU *
+                        </label>
+                        <input
+                            type="text"
+                            name="sku"
+                            x-model="formData.sku"
+                            :readonly="editMode"
+                            required
+                            :class="editMode ? 'bg-gray-100 cursor-not-allowed' : ''"
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-mono text-gray-900"
+                            placeholder="ABC123">
+                    </div>
+
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                            Nombre *
+                        </label>
+                        <input
+                            type="text"
+                            name="name"
+                            x-model="formData.name"
+                            required
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900"
+                            placeholder="Nombre del producto">
+                    </div>
+
+                    <!-- Price & Cost -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                                Precio *
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">$</span>
+                                <input
+                                    type="number"
+                                    name="price"
+                                    x-model="formData.price"
+                                    step="0.01"
+                                    min="0"
+                                    required
+                                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 pl-8 text-sm font-mono text-gray-900"
+                                    placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                                Costo
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">$</span>
+                                <input
+                                    type="number"
+                                    name="cost"
+                                    x-model="formData.cost"
+                                    step="0.01"
+                                    min="0"
+                                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 pl-8 text-sm font-mono text-gray-900"
+                                    placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                            Descripción
+                        </label>
+                        <textarea
+                            name="description"
+                            x-model="formData.description"
+                            rows="3"
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900"
+                            placeholder="Descripción del producto"></textarea>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-3 mt-6">
+                    <button
+                        type="button"
+                        @click="closeModal()"
+                        class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        class="btn flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm">
+                        <span x-text="editMode ? 'Actualizar' : 'Crear Producto'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function productManager() {
+            return {
+                showModal: false,
+                editMode: false,
+                formData: {
+                    sku: '',
+                    name: '',
+                    price: '',
+                    cost: '',
+                    description: ''
+                },
+
+                openCreateModal() {
+                    this.editMode = false;
+                    this.resetForm();
+                    this.showModal = true;
+                },
+
+                openEditModal(product) {
+                    this.editMode = true;
+                    this.formData = {
+                        sku: product.sku,
+                        name: product.name,
+                        price: product.price,
+                        cost: product.cost || '',
+                        description: product.description || ''
+                    };
+                    this.showModal = true;
+                },
+
+                closeModal() {
+                    this.showModal = false;
+                    this.resetForm();
+                },
+
+                resetForm() {
+                    this.formData = {
+                        sku: '',
+                        name: '',
+                        price: '',
+                        cost: '',
+                        description: ''
+                    };
+                }
+            }
+        }
+    </script>
+</body>
+</html>

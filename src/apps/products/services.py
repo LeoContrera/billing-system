@@ -184,6 +184,53 @@ class ProductService:
 
     @staticmethod
     @transaction.atomic
+    def update_product(
+        sku: str,
+        name: Optional[str] = None,
+        price: Optional[Decimal] = None,
+        description: Optional[str] = None,
+        cost: Optional[Decimal] = None,
+    ) -> Product:
+        """
+        Actualiza datos de un producto existente.
+
+        Args:
+            sku: SKU del producto a actualizar
+            name: Nuevo nombre (opcional)
+            price: Nuevo precio (opcional)
+            description: Nueva descripción (opcional)
+            cost: Nuevo costo (opcional)
+
+        Returns:
+            Product: Producto actualizado
+
+        Raises:
+            ValidationError: Si el producto no existe o datos inválidos
+        """
+        try:
+            product = Product.objects.select_for_update().get(sku=sku)
+        except Product.DoesNotExist:
+            raise ValidationError(f"Producto con SKU '{sku}' no encontrado")
+
+        # Validar y actualizar campos
+        if name is not None:
+            product.name = name
+        if price is not None:
+            if price < 0:
+                raise ValidationError("El precio no puede ser negativo")
+            product.price = price
+        if description is not None:
+            product.description = description
+        if cost is not None:
+            if cost < 0:
+                raise ValidationError("El costo no puede ser negativo")
+            product.cost = cost
+
+        product.save()
+        return product
+
+    @staticmethod
+    @transaction.atomic
     def deactivate_product(sku: str) -> Product:
         """
         Desactiva producto (soft delete).
@@ -210,3 +257,64 @@ class ProductService:
         product.save(update_fields=["is_active", "updated_at"])
 
         return product
+
+    @staticmethod
+    @transaction.atomic
+    def reactivate_product(sku: str) -> Product:
+        """
+        Reactiva un producto desactivado.
+
+        Args:
+            sku: SKU del producto a reactivar
+
+        Returns:
+            Product: Producto reactivado
+
+        Raises:
+            ValidationError: Si el producto no existe
+        """
+        try:
+            product = Product.objects.select_for_update().get(sku=sku)
+        except Product.DoesNotExist:
+            raise ValidationError(f"Producto con SKU '{sku}' no encontrado")
+
+        product.is_active = True
+        product.save(update_fields=["is_active", "updated_at"])
+
+        return product
+
+    @staticmethod
+    def get_all_products(
+        search_query: str = "",
+        show_inactive: bool = False,
+        order_by: str = "name"
+    ) -> QuerySet[Product]:
+        """
+        Obtiene todos los productos con filtrado y ordenamiento.
+
+        Args:
+            search_query: Texto de búsqueda (opcional)
+            show_inactive: Si debe mostrar productos inactivos
+            order_by: Campo para ordenar (name, sku, price, -price, etc.)
+
+        Returns:
+            QuerySet de productos
+        """
+        queryset = Product.objects.all()
+
+        # Filtrar por estado activo
+        if not show_inactive:
+            queryset = queryset.filter(is_active=True)
+
+        # Búsqueda
+        if search_query:
+            queryset = queryset.filter(
+                Q(sku__icontains=search_query) | Q(name__icontains=search_query)
+            )
+
+        # Ordenamiento
+        valid_order_fields = ['name', '-name', 'sku', '-sku', 'price', '-price', 'created_at', '-created_at']
+        if order_by in valid_order_fields:
+            queryset = queryset.order_by(order_by)
+
+        return queryset
