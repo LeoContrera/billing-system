@@ -9,4 +9,5 @@ app_name = 'customers'
 
 urlpatterns = [
     path('search/', views.search_customers, name='search'),
+    path('create/', views.create_customer, name='create'),
 ]

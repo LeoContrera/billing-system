@@ -219,44 +219,139 @@
                         <span class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">Opcional</span>
                     </div>
 
-                    <!-- Customer Search -->
-                    <div class="relative mb-4" x-show="!customer.id">
-                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Buscar Cliente</label>
-                        <input
-                            type="text"
-                            x-model="customerSearch"
-                            @input.debounce.300ms="searchCustomers()"
-                            @focus="showCustomerResults = true"
-                            @click.away="showCustomerResults = false"
-                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
-                            placeholder="Buscar por nombre o DNI...">
-
-                        <!-- Customer Search Results -->
-                        <div
-                            x-show="showCustomerResults && customerResults.length > 0"
-                            class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-float-lg max-h-48 overflow-y-auto">
-                            <template x-for="c in customerResults" :key="c.id">
-                                <button
-                                    @click="selectCustomer(c)"
-                                    class="w-full px-4 py-3 text-left hover:bg-blue-50 border-b border-gray-100 last:border-0 transition-colors">
-                                    <div class="text-sm font-semibold text-gray-900" x-text="c.full_name"></div>
-                                    <div class="text-xs text-gray-600" x-text="c.tax_id || 'Sin DNI/CUIT'"></div>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
-
                     <!-- Selected Customer Info -->
-                    <div x-show="customer.id" class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div x-show="customer.id" class="p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-sm font-bold text-gray-900" x-text="customer.fullName"></div>
                                 <div class="text-xs text-gray-600" x-text="customer.taxId || 'Sin DNI/CUIT'"></div>
+                                <div class="text-xs text-gray-600" x-text="customer.taxCategoryDisplay"></div>
                             </div>
                             <button
                                 @click="clearCustomer()"
                                 class="text-red-600 hover:text-red-700 text-sm font-semibold">
                                 Quitar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Customer Search or Create Toggle -->
+                    <div x-show="!customer.id">
+                        <div class="flex gap-2 mb-4">
+                            <button
+                                @click="customerMode = 'search'"
+                                :class="customerMode === 'search' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+                                class="btn flex-1 px-4 py-2 rounded-lg text-sm font-semibold">
+                                Buscar Existente
+                            </button>
+                            <button
+                                @click="customerMode = 'create'"
+                                :class="customerMode === 'create' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+                                class="btn flex-1 px-4 py-2 rounded-lg text-sm font-semibold">
+                                Crear Nuevo
+                            </button>
+                        </div>
+
+                        <!-- Customer Search -->
+                        <div x-show="customerMode === 'search'" class="relative">
+                            <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Buscar Cliente</label>
+                            <input
+                                type="text"
+                                x-model="customerSearch"
+                                @input.debounce.300ms="searchCustomers()"
+                                @focus="showCustomerResults = true"
+                                @click.away="showCustomerResults = false"
+                                class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                                placeholder="Buscar por nombre o DNI...">
+
+                            <!-- Customer Search Results -->
+                            <div
+                                x-show="showCustomerResults && customerResults.length > 0"
+                                class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-float-lg max-h-48 overflow-y-auto">
+                                <template x-for="c in customerResults" :key="c.id">
+                                    <button
+                                        @click="selectCustomer(c)"
+                                        class="w-full px-4 py-3 text-left hover:bg-blue-50 border-b border-gray-100 last:border-0 transition-colors">
+                                        <div class="text-sm font-semibold text-gray-900" x-text="c.full_name"></div>
+                                        <div class="text-xs text-gray-600" x-text="c.tax_id || 'Sin DNI/CUIT'"></div>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Customer Create Form -->
+                        <div x-show="customerMode === 'create'" class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Apellido/s</label>
+                                    <input
+                                        type="text"
+                                        x-model="newCustomer.lastName"
+                                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                                        placeholder="Apellido">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Nombre/s</label>
+                                    <input
+                                        type="text"
+                                        x-model="newCustomer.firstName"
+                                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                                        placeholder="Nombre">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Celular</label>
+                                <input
+                                    type="text"
+                                    x-model="newCustomer.phone"
+                                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                                    placeholder="Número de celular">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Localidad</label>
+                                <input
+                                    type="text"
+                                    x-model="newCustomer.locality"
+                                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                                    placeholder="Ciudad o localidad">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Dirección</label>
+                                <input
+                                    type="text"
+                                    x-model="newCustomer.address"
+                                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                                    placeholder="Dirección completa">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">DNI/CUIT</label>
+                                <input
+                                    type="text"
+                                    x-model="newCustomer.taxId"
+                                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900 font-mono"
+                                    placeholder="DNI o CUIT (opcional)">
+                                <div class="mt-1 text-xs text-gray-600">
+                                    <span x-show="getTaxCategoryFromReceipt() === 'RI'" class="text-amber-600 font-semibold">
+                                        * CUIT obligatorio para Responsable Inscripto
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                                <div class="text-xs text-indigo-700 font-medium mb-1">Categoría Tributaria (automática)</div>
+                                <div class="text-sm font-bold text-indigo-900" x-text="getTaxCategoryDisplayFromReceipt()"></div>
+                            </div>
+
+                            <button
+                                @click="createCustomer()"
+                                :disabled="!canCreateCustomer() || isLoading"
+                                class="btn w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span x-show="!isLoading">Crear y Seleccionar Cliente</span>
+                                <span x-show="isLoading">Creando...</span>
                             </button>
                         </div>
                     </div>
@@ -866,17 +961,28 @@
                 successMessage: '',
 
                 // Receipt type
-                receiptType: 'Ticket Comun',
+                receiptType: 'Ticket Común',
 
                 // Customer data
                 customer: {
                     id: {{ sale.customer.id|default:"null" }},
                     fullName: '{{ sale.customer.full_name|default:""|escapejs }}',
-                    taxId: '{{ sale.customer.tax_id|default:""|escapejs }}'
+                    taxId: '{{ sale.customer.tax_id|default:""|escapejs }}',
+                    taxCategory: '{{ sale.customer.tax_category|default:""|escapejs }}',
+                    taxCategoryDisplay: '{{ sale.customer.get_tax_category_display|default:""|escapejs }}'
                 },
                 customerSearch: '',
                 customerResults: [],
                 showCustomerResults: false,
+                customerMode: 'search', // 'search' or 'create'
+                newCustomer: {
+                    firstName: '',
+                    lastName: '',
+                    phone: '',
+                    locality: '',
+                    address: '',
+                    taxId: ''
+                },
 
                 // Line items from backend
                 lineItems: [
@@ -1012,18 +1118,22 @@
                             body: formData
                         });
 
-                        if (response.ok) {
+                        const data = await response.json();
+
+                        if (data.success) {
                             this.customer = {
                                 id: c.id,
                                 fullName: c.full_name,
-                                taxId: c.tax_id
+                                taxId: c.tax_id || '',
+                                taxCategory: c.tax_category || '',
+                                taxCategoryDisplay: c.tax_category_display || ''
                             };
                             this.customerSearch = '';
                             this.customerResults = [];
                             this.showCustomerResults = false;
+                            this.showSuccess('Cliente asignado');
                         } else {
-                            const errorText = await response.text();
-                            this.showError(errorText);
+                            this.showError(data.error || 'Error al asignar cliente');
                         }
                     } catch (error) {
                         this.showError('Error al asignar cliente');
@@ -1032,7 +1142,115 @@
                 },
 
                 clearCustomer() {
-                    this.customer = { id: null, fullName: '', taxId: '' };
+                    this.customer = {
+                        id: null,
+                        fullName: '',
+                        taxId: '',
+                        taxCategory: '',
+                        taxCategoryDisplay: ''
+                    };
+                    this.customerMode = 'search';
+                    this.newCustomer = {
+                        firstName: '',
+                        lastName: '',
+                        phone: '',
+                        locality: '',
+                        address: '',
+                        taxId: ''
+                    };
+                },
+
+                getTaxCategoryFromReceipt() {
+                    // Determinar categoría tributaria según tipo de comprobante
+                    if (this.receiptType === 'Ticket Común' || this.receiptType === 'Factura C') {
+                        return 'CF'; // Consumidor Final
+                    } else if (this.receiptType === 'Factura B') {
+                        return 'EX'; // Exento
+                    } else if (this.receiptType === 'Factura A') {
+                        return 'RI'; // Responsable Inscripto
+                    }
+                    return 'CF';
+                },
+
+                getTaxCategoryDisplayFromReceipt() {
+                    const category = this.getTaxCategoryFromReceipt();
+                    const displays = {
+                        'CF': 'Consumidor Final',
+                        'EX': 'Exento',
+                        'RI': 'Responsable Inscripto'
+                    };
+                    return displays[category] || 'Consumidor Final';
+                },
+
+                canCreateCustomer() {
+                    if (!this.newCustomer.firstName.trim() || !this.newCustomer.lastName.trim()) {
+                        return false;
+                    }
+                    // Si es Responsable Inscripto, CUIT es obligatorio
+                    if (this.getTaxCategoryFromReceipt() === 'RI' && !this.newCustomer.taxId.trim()) {
+                        return false;
+                    }
+                    return true;
+                },
+
+                async createCustomer() {
+                    if (!this.canCreateCustomer()) return;
+
+                    this.isLoading = true;
+                    try {
+                        const formData = new URLSearchParams();
+                        formData.append('first_name', this.newCustomer.firstName);
+                        formData.append('last_name', this.newCustomer.lastName);
+                        formData.append('phone', this.newCustomer.phone);
+                        formData.append('locality', this.newCustomer.locality);
+                        formData.append('address', this.newCustomer.address);
+                        formData.append('tax_category', this.getTaxCategoryFromReceipt());
+                        formData.append('tax_id', this.newCustomer.taxId);
+
+                        const response = await this.fetchAPI('/customers/create/', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Asignar el cliente recién creado a la venta
+                            const assignFormData = new URLSearchParams();
+                            assignFormData.append('sale_id', this.saleId);
+                            assignFormData.append('customer_id', data.customer.id);
+
+                            const assignResponse = await this.fetchAPI('/sale/set-customer/', {
+                                method: 'POST',
+                                body: assignFormData
+                            });
+
+                            if (assignResponse.ok) {
+                                this.customer = {
+                                    id: data.customer.id,
+                                    fullName: data.customer.full_name,
+                                    taxId: data.customer.tax_id || '',
+                                    taxCategory: data.customer.tax_category,
+                                    taxCategoryDisplay: data.customer.tax_category_display
+                                };
+                                this.newCustomer = {
+                                    firstName: '',
+                                    lastName: '',
+                                    phone: '',
+                                    locality: '',
+                                    address: '',
+                                    taxId: ''
+                                };
+                                this.customerMode = 'search';
+                                this.showSuccess('Cliente creado y asignado');
+                            }
+                        } else {
+                            this.showError(data.error || 'Error al crear cliente');
+                        }
+                    } catch (error) {
+                        this.showError('Error al crear cliente');
+                    }
+                    this.isLoading = false;
                 },
 
                 // Product methods
@@ -1113,16 +1331,17 @@
                             body: formData
                         });
 
-                        if (response.ok) {
-                            // Add item to local state
-                            // Note: In a real implementation, you'd parse the response to get the item ID
+                        const data = await response.json();
+
+                        if (data.success) {
+                            // Add item to local state with real ID from backend
                             const newItem = {
-                                id: Date.now(), // Temporary ID until page refresh
-                                sku: this.selectedProduct.sku,
-                                description: this.selectedProduct.name,
-                                quantity: this.newItemQuantity,
-                                unitPrice: parseFloat(this.selectedProduct.price),
-                                discountAmount: 0,
+                                id: data.item.id,
+                                sku: data.item.sku,
+                                description: data.item.description,
+                                quantity: data.item.quantity,
+                                unitPrice: data.item.unitPrice,
+                                discountAmount: data.item.discountAmount,
                                 get subtotal() {
                                     return (this.quantity * this.unitPrice) - this.discountAmount;
                                 }
@@ -1131,8 +1350,7 @@
                             this.closeProductModal();
                             this.showSuccess('Producto agregado');
                         } else {
-                            const errorText = await response.text();
-                            this.productError = errorText.replace(/<[^>]*>/g, '');
+                            this.productError = data.error || 'Error al agregar producto';
                         }
                     } catch (error) {
                         this.productError = 'Error al agregar producto';
@@ -1264,10 +1482,12 @@
                             body: formData
                         });
 
-                        if (response.ok) {
+                        const data = await response.json();
+
+                        if (data.success) {
                             const pm = this.getSelectedPaymentMethod();
                             const payment = {
-                                id: Date.now(),
+                                id: data.transaction.id,
                                 method: pm.name,
                                 methodType: pm.methodType,
                                 amount: parseFloat(this.newPayment.amount),
@@ -1281,8 +1501,7 @@
                             this.closePaymentModal();
                             this.showSuccess('Pago registrado');
                         } else {
-                            const errorText = await response.text();
-                            this.showError(errorText.replace(/<[^>]*>/g, ''));
+                            this.showError(data.error || 'Error al registrar pago');
                         }
                     } catch (error) {
                         this.showError('Error al registrar pago');
@@ -1318,14 +1537,15 @@
                             body: formData
                         });
 
-                        if (response.ok) {
-                            this.globalDiscountAmount = discountAmount;
+                        const data = await response.json();
+
+                        if (data.success) {
+                            this.globalDiscountAmount = data.discount_amount;
                             this.showGlobalDiscountModal = false;
                             this.tempGlobalDiscountPercentage = 0;
                             this.showSuccess('Descuento aplicado');
                         } else {
-                            const errorText = await response.text();
-                            this.showError(errorText.replace(/<[^>]*>/g, ''));
+                            this.showError(data.error || 'Error al aplicar descuento');
                         }
                     } catch (error) {
                         this.showError('Error al aplicar descuento');
@@ -1361,8 +1581,14 @@
                                 body: formData
                             });
 
-                            if (response.ok) {
-                                item.discountAmount = discountAmount;
+                            const data = await response.json();
+
+                            if (data.success) {
+                                item.discountAmount = data.item.discount_amount;
+                            } else {
+                                this.showError(data.error || 'Error al aplicar descuento');
+                                this.isLoading = false;
+                                return;
                             }
                         }
 
@@ -1407,15 +1633,16 @@ Items: ${this.lineItems.length}
                             body: formData
                         });
 
-                        if (response.ok) {
+                        const data = await response.json();
+
+                        if (data.success) {
                             this.showSuccess('Venta finalizada con exito');
                             // Redirect to new sale after a short delay
                             setTimeout(() => {
                                 window.location.href = '/sale/pos/';
                             }, 1500);
                         } else {
-                            const errorText = await response.text();
-                            this.showError(errorText.replace(/<[^>]*>/g, ''));
+                            this.showError(data.error || 'Error al finalizar venta');
                         }
                     } catch (error) {
                         this.showError('Error al finalizar venta');

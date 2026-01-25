@@ -73,19 +73,27 @@ def set_customer(request):
     Asignar cliente a venta.
 
     POST /sale/set-customer/
-    HTMX: Renderiza partial HTML con info del cliente
+    JSON: Retorna estado de éxito para Alpine.js
     """
+    from django.http import JsonResponse
+
     try:
         sale_id = request.POST.get('sale_id')
         customer_id = request.POST.get('customer_id')
 
         sale = SaleService.set_customer(int(sale_id), int(customer_id))
 
-        # Renderizar partial HTML con info del cliente
-        return render(request, 'sale/_customer_info.html', {'sale': sale})
+        return JsonResponse({
+            'success': True,
+            'message': 'Cliente asignado'
+        })
 
     except ValidationError as e:
-        return HttpResponse(f'<div class="text-red-600">{e.message}</div>', status=400)
+        error_message = e.message if hasattr(e, 'message') else str(e)
+        return JsonResponse({
+            'success': False,
+            'error': error_message
+        }, status=400)
 
 
 @login_required
@@ -96,6 +104,7 @@ def add_item(request):
 
     POST /sale/add-item/
     HTMX: Renderiza solo la nueva fila de producto
+    JSON: Retorna datos del item para Alpine.js
 
     Parámetros POST:
         - sale_id: ID de la venta
@@ -112,15 +121,40 @@ def add_item(request):
         # El servicio ahora valida producto y stock automáticamente
         item = SaleService.add_line_item(sale_id, sku, quantity)
 
-        # Renderizar solo la nueva fila
-        return render(request, 'sale/_product_row.html', {'item': item})
+        # Si es request HTMX, renderizar HTML
+        if request.headers.get('HX-Request'):
+            return render(request, 'sale/_product_row.html', {'item': item})
+
+        # Si es request JSON (Alpine.js/Fetch), retornar JSON
+        from django.http import JsonResponse
+        return JsonResponse({
+            'success': True,
+            'item': {
+                'id': item.id,
+                'sku': item.sku,
+                'description': item.product_name,
+                'quantity': float(item.quantity),
+                'unitPrice': float(item.unit_price),
+                'discountAmount': float(item.discount_amount),
+            }
+        })
 
     except ValidationError as e:
         error_message = e.message if hasattr(e, 'message') else str(e)
-        return HttpResponse(
-            f'<div class="text-red-600 p-2 rounded bg-red-50">{error_message}</div>',
-            status=400
-        )
+
+        # Si es request HTMX
+        if request.headers.get('HX-Request'):
+            return HttpResponse(
+                f'<div class="text-red-600 p-2 rounded bg-red-50">{error_message}</div>',
+                status=400
+            )
+
+        # Si es request JSON
+        from django.http import JsonResponse
+        return JsonResponse({
+            'success': False,
+            'error': error_message
+        }, status=400)
 
 
 @login_required
@@ -130,22 +164,28 @@ def discount_global(request):
     Aplicar descuento global.
 
     POST /sale/discount-global/
-    HTMX: Renderiza sección de totales actualizada
+    JSON: Retorna estado de éxito para Alpine.js
     """
+    from django.http import JsonResponse
+
     try:
         sale_id = int(request.POST.get('sale_id'))
         discount_amount = Decimal(request.POST.get('discount_amount'))
 
         sale = SaleService.apply_global_discount(sale_id, discount_amount)
 
-        # Re-fetch con relaciones para cálculos
-        sale = Sale.objects.prefetch_related('line_items', 'transactions').get(pk=sale_id)
-
-        # Renderizar sección de totales
-        return render(request, 'sale/_totals_section.html', {'sale': sale})
+        return JsonResponse({
+            'success': True,
+            'discount_amount': float(discount_amount),
+            'message': 'Descuento aplicado'
+        })
 
     except ValidationError as e:
-        return HttpResponse(f'<div class="text-red-600">{e.message}</div>', status=400)
+        error_message = e.message if hasattr(e, 'message') else str(e)
+        return JsonResponse({
+            'success': False,
+            'error': error_message
+        }, status=400)
 
 
 @login_required
@@ -155,19 +195,30 @@ def discount_item(request):
     Aplicar descuento a línea específica.
 
     POST /sale/discount-item/
-    HTMX: Renderiza solo la fila actualizada
+    JSON: Retorna datos actualizados del item para Alpine.js
     """
+    from django.http import JsonResponse
+
     try:
         line_item_id = int(request.POST.get('line_item_id'))
         discount_amount = Decimal(request.POST.get('discount_amount'))
 
         line_item = SaleService.apply_line_discount(line_item_id, discount_amount)
 
-        # Renderizar solo la fila actualizada
-        return render(request, 'sale/_line_item_row.html', {'item': line_item})
+        return JsonResponse({
+            'success': True,
+            'item': {
+                'id': line_item.id,
+                'discount_amount': float(line_item.discount_amount)
+            }
+        })
 
     except ValidationError as e:
-        return HttpResponse(f'<div class="text-red-600">{e.message}</div>', status=400)
+        error_message = e.message if hasattr(e, 'message') else str(e)
+        return JsonResponse({
+            'success': False,
+            'error': error_message
+        }, status=400)
 
 
 @login_required
@@ -177,8 +228,10 @@ def add_payment(request):
     Agregar pago a venta.
 
     POST /sale/add-payment/
-    HTMX: Renderiza fila de pago actualizada
+    JSON: Retorna datos del pago para Alpine.js
     """
+    from django.http import JsonResponse
+
     try:
         sale_id = int(request.POST.get('sale_id'))
         payment_method_id = int(request.POST.get('payment_method_id'))
@@ -191,11 +244,22 @@ def add_payment(request):
             user=request.user
         )
 
-        # Renderizar fila de pago
-        return render(request, 'sale/_payment_row.html', {'transaction': transaction})
+        return JsonResponse({
+            'success': True,
+            'transaction': {
+                'id': transaction.id,
+                'amount': float(transaction.amount),
+                'method_name': transaction.payment_method.name,
+                'method_type': transaction.payment_method.method_type
+            }
+        })
 
     except ValidationError as e:
-        return HttpResponse(f'<div class="text-red-600">{e.message}</div>', status=400)
+        error_message = e.message if hasattr(e, 'message') else str(e)
+        return JsonResponse({
+            'success': False,
+            'error': error_message
+        }, status=400)
 
 
 @login_required
@@ -205,23 +269,28 @@ def finalize_sale(request):
     Finalizar venta con descuento de inventario.
 
     POST /sale/finalize/
-    HTMX: Renderiza mensaje de éxito + botón para nueva venta
+    JSON: Retorna estado de éxito para Alpine.js
 
     Nota: Al finalizar, se registran movimientos de inventario para todos
     los items con SKU. Si algún item no tiene stock suficiente, se hace
     rollback de toda la operación.
     """
+    from django.http import JsonResponse
+
     try:
         sale_id = int(request.POST.get('sale_id'))
         # Pasar usuario para registro de movimientos de inventario
         sale = SaleService.finalize_sale(sale_id, request.user)
 
-        # Renderizar mensaje de éxito + botón para nueva venta
-        return render(request, 'sale/_sale_completed.html', {'sale': sale})
+        return JsonResponse({
+            'success': True,
+            'sale_id': sale.id,
+            'message': 'Venta finalizada con éxito'
+        })
 
     except ValidationError as e:
         error_message = e.message if hasattr(e, 'message') else str(e)
-        return HttpResponse(
-            f'<div class="text-red-600 p-2 rounded bg-red-50">{error_message}</div>',
-            status=400
-        )
+        return JsonResponse({
+            'success': False,
+            'error': error_message
+        }, status=400)
