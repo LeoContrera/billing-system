@@ -95,6 +95,12 @@ class Invoice(models.Model):
         #     pos = str(self.afip_receipt.point_of_sales.number).zfill(4)
         #     num = str(self.afip_receipt.receipt_number).zfill(8)
         #     return f"{pos}-{num}"
+
+        # Modo DEBUG: Generar número simulado
+        if self.is_authorized:
+            pos = "0001"  # Punto de venta simulado
+            num = str(self.id).zfill(8)  # Usar ID de la factura
+            return f"{pos}-{num}"
         return "Sin autorizar"
 
 

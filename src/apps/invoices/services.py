@@ -41,28 +41,44 @@ class InvoiceService:
     ISSUER_TAX_CATEGORY = TaxCategory.RESPONSABLE_INSCRIPTO
 
     @staticmethod
-    def determine_receipt_type(issuer_tax_category: str, customer_tax_category: str) -> str:
+    def determine_receipt_type(
+        issuer_tax_category: str,
+        customer_tax_category: str,
+        customer_identified: bool = True
+    ) -> str:
         """
         Determina el tipo de comprobante según matriz ARCA.
 
         Matriz de decisión:
-        - RI → RI: Factura A
-        - RI → MT/CF/EX: Factura B
+        - RI → Sin identificar (venta < tope ARCA ~$190k): Factura C (Ticket)
+        - RI → RI identificado: Factura A
+        - RI → CF/MT/EX identificado: Factura B
         - MT/CF/EX → cualquiera: Factura C
 
         Args:
             issuer_tax_category: Categoría fiscal del emisor (empresa)
             customer_tax_category: Categoría fiscal del cliente
+            customer_identified: Si el cliente está identificado (tiene datos personales)
 
         Returns:
             str: 'A', 'B', o 'C'
+
+        Notas:
+            - Ticket (sin identificación) = Factura C
+            - Para montos mayores a ~$190.000 se requiere identificación obligatoria
         """
         if issuer_tax_category == TaxCategory.RESPONSABLE_INSCRIPTO:
             if customer_tax_category == TaxCategory.RESPONSABLE_INSCRIPTO:
+                # RI → RI siempre requiere identificación (CUIT obligatorio)
                 return ReceiptType.FACTURA_A
-            else:
+            elif customer_identified:
+                # RI → CF/MT/EX con datos del cliente
                 return ReceiptType.FACTURA_B
+            else:
+                # RI → Sin identificar (Ticket para ventas menores)
+                return ReceiptType.FACTURA_C
         else:
+            # Emisor MT/CF/EX → siempre Factura C
             return ReceiptType.FACTURA_C
 
     @staticmethod
@@ -185,15 +201,18 @@ class InvoiceService:
             customer_name = sale.customer.full_name
             customer_tax_id = sale.customer.tax_id or ''
             customer_tax_category = sale.customer.tax_category
+            customer_identified = True
         else:
             customer_name = "Consumidor Final"
             customer_tax_id = ""
             customer_tax_category = TaxCategory.CONSUMIDOR_FINAL
+            customer_identified = False
 
         # Determinar tipo de comprobante
         receipt_type = InvoiceService.determine_receipt_type(
             InvoiceService.ISSUER_TAX_CATEGORY,
-            customer_tax_category
+            customer_tax_category,
+            customer_identified
         )
 
         # Calcular impuestos según tipo de comprobante

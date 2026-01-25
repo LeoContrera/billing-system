@@ -86,6 +86,30 @@ def ejemplo_completo_facturacion():
 
     print(f"✓ Productos listos: {product1.name}, {product2.name}")
 
+    # Asegurar stock suficiente para el ejemplo
+    from inventory.services import InventoryService
+
+    # Verificar stock actual y agregar si es necesario
+    stock1 = InventoryService.get_stock_level('PROD-001')
+    if stock1 is None or stock1 < 10:
+        InventoryService.adjust_stock(
+            sku='PROD-001',
+            new_quantity=Decimal('100'),
+            user=user,
+            notes='Stock inicial para ejemplo AFIP'
+        )
+        print(f"✓ Stock agregado para {product1.name}")
+
+    stock2 = InventoryService.get_stock_level('PROD-002')
+    if stock2 is None or stock2 < 10:
+        InventoryService.adjust_stock(
+            sku='PROD-002',
+            new_quantity=Decimal('100'),
+            user=user,
+            notes='Stock inicial para ejemplo AFIP'
+        )
+        print(f"✓ Stock agregado para {product2.name}")
+
     # ========================================
     # PASO 2: CREAR VENTA Y AGREGAR PRODUCTOS
     # ========================================

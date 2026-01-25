@@ -15,6 +15,7 @@ urlpatterns = [
     path('create/<int:sale_id>/', views.create_invoice, name='create'),
     path('<int:invoice_id>/emit-cae/', views.emit_cae, name='emit_cae'),
 
-    # Detalles
+    # PDF y detalles
+    path('<int:invoice_id>/pdf/', views.download_pdf, name='download_pdf'),
     path('<int:invoice_id>/', views.invoice_details, name='details'),
 ]

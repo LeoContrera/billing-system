@@ -4,7 +4,7 @@ Views para el módulo de facturación electrónica.
 Endpoints REST para crear facturas y emitir CAE.
 """
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.core.exceptions import ValidationError
@@ -153,6 +153,46 @@ def process_sale_afip(request, sale_id):
     except Exception as e:
         logger.error(f"Error inesperado procesando venta {sale_id} con AFIP: {str(e)}")
         return JsonResponse({'success': False, 'error': 'Error interno del servidor'}, status=500)
+
+
+@login_required
+def download_pdf(request, invoice_id):
+    """
+    Descarga el PDF de una factura autorizada.
+
+    GET /invoices/<invoice_id>/pdf/
+
+    Returns:
+        PDF file (application/pdf) o error JSON
+
+    Errors:
+        404: Factura no encontrada
+        400: Factura no autorizada
+    """
+    try:
+        invoice = Invoice.objects.select_related('sale').get(pk=invoice_id)
+
+        if not invoice.is_authorized:
+            return JsonResponse(
+                {'success': False, 'error': 'La factura no está autorizada'},
+                status=400
+            )
+
+        # Generar PDF
+        pdf_buffer = InvoiceService.generate_pdf(invoice)
+
+        # Preparar respuesta
+        response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+        filename = f'Factura_{invoice.get_receipt_type_display()}_{invoice.id}_{invoice.cae}.pdf'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        return response
+
+    except Invoice.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Factura no encontrada'}, status=404)
+    except Exception as e:
+        logger.error(f"Error generando PDF para factura {invoice_id}: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'Error generando PDF'}, status=500)
 
 
 @login_required

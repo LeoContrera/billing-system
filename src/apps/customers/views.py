@@ -59,11 +59,12 @@ def create_customer(request):
     Parámetros POST:
         - first_name: Nombre del cliente
         - last_name: Apellido del cliente
+        - email: Email del cliente (requerido para facturación electrónica)
         - phone: Celular
         - locality: Localidad
         - address: Dirección
         - tax_category: Categoría tributaria (CF, EX, RI, MT)
-        - tax_id: DNI/CUIT (opcional)
+        - tax_id: DNI/CUIT (opcional para CF, requerido para RI)
 
     Returns:
         JsonResponse con datos del cliente creado o error
@@ -71,6 +72,7 @@ def create_customer(request):
     try:
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
         locality = request.POST.get('locality', '').strip()
         address = request.POST.get('address', '').strip()
@@ -80,6 +82,7 @@ def create_customer(request):
         customer = CustomerService.create_customer(
             first_name=first_name,
             last_name=last_name,
+            email=email,
             phone=phone,
             locality=locality,
             address=address,
@@ -92,6 +95,7 @@ def create_customer(request):
             'customer': {
                 'id': customer.id,
                 'full_name': customer.full_name,
+                'email': customer.email,
                 'tax_id': customer.tax_id or '',
                 'phone': customer.phone,
                 'locality': customer.locality,
