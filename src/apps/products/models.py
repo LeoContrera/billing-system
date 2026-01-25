@@ -11,6 +11,16 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 
+class VATRate(models.TextChoices):
+    """Alícuotas de IVA disponibles."""
+    VAT_21 = '21.00', 'IVA 21%'
+    VAT_10_5 = '10.50', 'IVA 10.5%'
+    VAT_27 = '27.00', 'IVA 27%'
+    VAT_5 = '5.00', 'IVA 5%'
+    VAT_2_5 = '2.50', 'IVA 2.5%'
+    VAT_0 = '0.00', 'IVA 0% (Exento)'
+
+
 class Product(models.Model):
     """
     Producto disponible para venta en el sistema POS.
@@ -21,6 +31,7 @@ class Product(models.Model):
         description: Descripción detallada (opcional)
         price: Precio de venta unitario
         cost: Costo de adquisición (opcional, para reportes)
+        vat_rate: Tasa de IVA aplicable (21%, 10.5%, 27%, etc.)
         is_active: Indica si el producto está disponible para venta
         created_at: Fecha de creación del registro
         updated_at: Fecha de última modificación
@@ -57,6 +68,13 @@ class Product(models.Model):
         blank=True,
         validators=[MinValueValidator(Decimal("0.00"))],
         help_text="Costo de adquisición (opcional)",
+    )
+    vat_rate = models.CharField(
+        "Tasa de IVA",
+        max_length=5,
+        choices=VATRate.choices,
+        default=VATRate.VAT_21,
+        help_text="Alícuota de IVA aplicable al producto"
     )
     is_active = models.BooleanField(
         "Activo",

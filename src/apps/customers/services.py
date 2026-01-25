@@ -78,6 +78,7 @@ class CustomerService:
     def create_customer(
         first_name: str,
         last_name: str,
+        email: str = '',
         phone: str = '',
         locality: str = '',
         address: str = '',
@@ -90,6 +91,7 @@ class CustomerService:
         Args:
             first_name: Nombre del cliente (requerido)
             last_name: Apellido del cliente (requerido)
+            email: Email del cliente (requerido para facturación electrónica)
             phone: Número de celular
             locality: Localidad/ciudad
             address: Dirección completa
@@ -106,6 +108,7 @@ class CustomerService:
             customer = CustomerService.create_customer(
                 first_name="Juan",
                 last_name="Pérez",
+                email="juan@ejemplo.com",
                 phone="123456789",
                 locality="Buenos Aires",
                 tax_category=TaxCategory.RESPONSABLE_INSCRIPTO,
@@ -130,6 +133,7 @@ class CustomerService:
         customer = Customer.objects.create(
             first_name=first_name.strip(),
             last_name=last_name.strip(),
+            email=email.strip(),
             phone=phone.strip(),
             locality=locality.strip(),
             address=address.strip(),

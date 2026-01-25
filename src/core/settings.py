@@ -39,12 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_afip',
     'users',
     'customers',
     'products',
     'inventory',
     'sale',
     'payments',
+    'invoices',
 ]
 
 MIDDLEWARE = [
@@ -126,6 +128,46 @@ STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'users.User'
 
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 STATICFILES_DIRS = [
     BASE_DIR.parent / 'static',
 ]
+
+# AFIP Configuration
+AFIP_DEBUG_MODE = os.getenv('AFIP_DEBUG_MODE', 'True').lower() == 'true'
+
+# Email Configuration
+# En desarrollo: Los emails se imprimen en consola
+# En producción: Configurar con variables de entorno
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend'
+)
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv(
+    'DEFAULT_FROM_EMAIL',
+    'noreply@billing-system.local'
+)
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'invoices': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}

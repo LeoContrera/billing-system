@@ -1,0 +1,23 @@
+@startuml "Arquitectura Modular - Service Layer"
+skinparam style strictuml
+
+package "app.sale" {
+    class VentaModel
+}
+
+package "app.invoices" {
+    class FacturaModel
+    class "services.py" as ServiceLayer
+    
+    FacturaModel --> VentaModel : FK (1..1)
+    ServiceLayer ..> FacturaModel : gestiona
+    ServiceLayer ..> "django-afip" : utiliza
+}
+
+note right of ServiceLayer
+  Contiene TODA la lógica:
+  - Cálculos de IVA
+  - Comunicación con ARCA
+  - Generación de PDF
+end note
+@enduml
