@@ -6,19 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS - Venta #{{ sale.id }}</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <!-- Custom Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token }}">
 
     <style>
@@ -148,7 +144,6 @@
     </style>
 </head>
 <body class="h-full antialiased" x-data="posApp()">
-    <!-- Header -->
     <header class="border-b border-gray-200 bg-white shadow-sm">
         <div class="px-8 py-5 flex items-center justify-between">
             <div class="flex items-center gap-6">
@@ -172,11 +167,9 @@
     </header>
 
     <div class="h-[calc(100vh-73px)] flex">
-        <!-- Left Column: Customer & Products -->
         <div class="flex-1 overflow-y-auto bg-gray-50">
             <div class="p-8 space-y-6">
 
-                <!-- Receipt Type Info (Auto-determined) -->
                 <section class="card p-6 shadow-float bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200">
                     <div class="flex items-center justify-between">
                         <div class="flex-1">
@@ -201,7 +194,6 @@
                     </div>
                 </section>
 
-                <!-- Customer Details Card -->
                 <section class="card p-6 shadow-float">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-sm uppercase tracking-wider font-bold text-blue-600">Cliente</h2>
@@ -215,7 +207,6 @@
                         </div>
                     </div>
 
-                    <!-- Selected Customer Info -->
                     <div x-show="customer.id" class="p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
                         <div class="flex items-center justify-between">
                             <div>
@@ -231,7 +222,6 @@
                         </div>
                     </div>
 
-                    <!-- Customer Search or Create Toggle -->
                     <div x-show="!customer.id">
                         <div class="flex gap-2 mb-4">
                             <button
@@ -248,7 +238,6 @@
                             </button>
                         </div>
 
-                        <!-- Customer Search -->
                         <div x-show="customerMode === 'search'" class="relative">
                             <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Buscar Cliente</label>
                             <input
@@ -260,7 +249,6 @@
                                 class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
                                 placeholder="Buscar por nombre o DNI...">
 
-                            <!-- Customer Search Results -->
                             <div
                                 x-show="showCustomerResults && customerResults.length > 0"
                                 class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-float-lg max-h-48 overflow-y-auto">
@@ -275,7 +263,6 @@
                             </div>
                         </div>
 
-                        <!-- Customer Create Form -->
                         <div x-show="customerMode === 'create'" class="space-y-3">
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
@@ -378,7 +365,6 @@
                     </div>
                 </section>
 
-                <!-- Products Table -->
                 <section class="card shadow-float">
                     <div class="p-6 pb-4">
                         <h2 class="text-sm uppercase tracking-wider font-bold text-blue-600">Productos</h2>
@@ -450,7 +436,6 @@
                     </div>
                 </section>
 
-                <!-- Discounts Section -->
                 <section class="card p-6 shadow-float">
                     <h2 class="text-sm uppercase tracking-wider font-bold text-amber-600 mb-6">Descuentos</h2>
 
@@ -480,11 +465,9 @@
             </div>
         </div>
 
-        <!-- Right Column: Payment & Totals -->
         <div class="w-[460px] border-l border-gray-200 bg-white overflow-y-auto">
             <div class="p-8 space-y-6">
 
-                <!-- Total Display (Prominent) -->
                 <section class="card p-8 shadow-float-lg bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
                     <div class="text-center">
                         <div class="text-xs uppercase tracking-widest font-bold text-blue-600 mb-3">Total de Venta</div>
@@ -496,7 +479,6 @@
                     </div>
                 </section>
 
-                <!-- Payment Methods -->
                 <section class="card p-6 shadow-float">
                     <h2 class="text-sm uppercase tracking-wider font-bold text-blue-600 mb-6">Métodos de Pago</h2>
 
@@ -554,7 +536,6 @@
                     </div>
                 </section>
 
-                <!-- Balance Summary -->
                 <section class="card p-6 shadow-float bg-gray-50">
                     <div class="space-y-3">
                         <div class="flex justify-between items-center">
@@ -576,7 +557,6 @@
                     </div>
                 </section>
 
-                <!-- Action Buttons -->
                 <div class="space-y-3">
                     <button
                         @click="viewDetails()"
@@ -597,7 +577,6 @@
         </div>
     </div>
 
-    <!-- Payment Modal -->
     <div
         x-show="showPaymentModal"
         x-cloak
@@ -607,7 +586,6 @@
         <div class="card p-8 max-w-lg w-full animate-slide-in shadow-float-lg max-h-[90vh] overflow-y-auto" @click.stop>
             <h3 class="text-xl font-bold mb-6 text-blue-600">Agregar Pago</h3>
 
-            <!-- Error message container -->
             <div id="payment-error" class="mb-4"></div>
 
             <form
@@ -617,7 +595,6 @@
                 <input type="hidden" name="sale_id" value="{{ sale.id }}">
 
                 <div class="space-y-4">
-                    <!-- Payment Method -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Método de Pago</label>
                         <select
@@ -632,7 +609,6 @@
                         </select>
                     </div>
 
-                    <!-- Card Type (only for credit/debit cards) -->
                     <div x-show="newPayment.requiresCard" class="animate-slide-in">
                         <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Tipo de Tarjeta</label>
                         <select
@@ -651,7 +627,6 @@
                         </select>
                     </div>
 
-                    <!-- Installments (only for credit cards) -->
                     <div x-show="newPayment.isCredit" class="animate-slide-in">
                         <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Cuotas</label>
                         <select
@@ -669,7 +644,6 @@
                         </select>
                     </div>
 
-                    <!-- Interest Rate (only for credit cards with installments > 1) -->
                     <div x-show="newPayment.isCredit && newPayment.installments > 1" class="animate-slide-in">
                         <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Tasa de Interés (%)</label>
                         <div class="relative">
@@ -690,7 +664,6 @@
                         </div>
                     </div>
 
-                    <!-- Amount -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Monto Base</label>
                         <div class="relative">
@@ -711,10 +684,8 @@
                         </div>
                     </div>
 
-                    <!-- Interest Preview (loaded from backend) -->
                     <div id="interest-preview"></div>
 
-                    <!-- Action Buttons -->
                     <div class="flex gap-3 mt-6">
                         <button
                             type="button"
@@ -741,7 +712,6 @@
         </div>
     </div>
 
-    <!-- Global Discount Modal -->
     <div
         x-show="showGlobalDiscountModal"
         x-cloak
@@ -789,7 +759,6 @@
         </div>
     </div>
 
-    <!-- Unit Discount Modal -->
     <div
         x-show="showUnitDiscountModal"
         x-cloak
@@ -800,7 +769,6 @@
             <h3 class="text-xl font-bold mb-6 text-amber-600">Descuento por Producto</h3>
 
             <div class="space-y-4">
-                <!-- Product Selection -->
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wide">Seleccionar Productos</label>
                     <div class="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
@@ -825,7 +793,6 @@
                     </div>
                 </div>
 
-                <!-- Discount Percentage -->
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Porcentaje de Descuento</label>
                     <div class="relative">
@@ -862,7 +829,6 @@
         </div>
     </div>
 
-    <!-- Product Search Modal -->
     <div
         x-show="showProductModal"
         x-cloak
@@ -873,7 +839,6 @@
             <h3 class="text-xl font-bold mb-6 text-blue-600">Agregar Producto</h3>
 
             <div class="space-y-4">
-                <!-- Product Search -->
                 <div class="relative">
                     <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Buscar Producto</label>
                     <input
@@ -883,7 +848,6 @@
                         class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900"
                         placeholder="Buscar por SKU o nombre...">
 
-                    <!-- Product Search Results -->
                     <div
                         x-show="productResults.length > 0"
                         class="mt-2 bg-white border border-gray-300 rounded-lg shadow-float max-h-48 overflow-y-auto">
@@ -903,7 +867,6 @@
                     </div>
                 </div>
 
-                <!-- Selected Product -->
                 <div x-show="selectedProduct" class="p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div class="flex justify-between items-start mb-3">
                         <div>
@@ -913,13 +876,11 @@
                         <span class="font-mono text-lg font-bold text-gray-900" x-text="selectedProduct ? formatCurrency(parseFloat(selectedProduct.price)) : ''"></span>
                     </div>
 
-                    <!-- Stock availability -->
                     <div x-show="stockInfo !== null" class="text-xs mb-3">
                         <span x-show="stockInfo?.available" class="text-green-600 font-medium">Stock disponible</span>
                         <span x-show="stockInfo && !stockInfo.available" class="text-red-600 font-medium">Stock insuficiente</span>
                     </div>
 
-                    <!-- Quantity -->
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Cantidad</label>
                         <input
@@ -932,7 +893,6 @@
                     </div>
                 </div>
 
-                <!-- Error Message -->
                 <div x-show="productError" class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm" x-text="productError"></div>
 
                 <div class="flex gap-3 mt-6">
@@ -953,7 +913,6 @@
         </div>
     </div>
 
-    <!-- Invoice Modal -->
     <div
         x-show="showInvoiceModal"
         x-cloak
@@ -973,31 +932,26 @@
             </div>
 
             <div class="bg-gray-50 rounded-lg p-6 space-y-4 mb-6">
-                <!-- Receipt Type -->
                 <div class="flex justify-between items-center pb-3 border-b border-gray-200">
                     <span class="text-sm font-semibold text-gray-600">Tipo de Comprobante:</span>
                     <span class="text-base font-bold text-gray-900" x-text="formatReceiptType(invoice.receiptType)"></span>
                 </div>
 
-                <!-- CAE -->
                 <div class="pb-3 border-b border-gray-200">
                     <div class="text-sm font-semibold text-gray-600 mb-2">CAE (Código de Autorización):</div>
                     <div class="font-mono text-xl font-bold text-blue-600 text-center bg-white rounded p-3" x-text="invoice.cae"></div>
                 </div>
 
-                <!-- CAE Expiration -->
                 <div class="flex justify-between items-center pb-3 border-b border-gray-200">
                     <span class="text-sm font-semibold text-gray-600">Vencimiento CAE:</span>
                     <span class="font-mono text-sm text-gray-900" x-text="invoice.caeExpiration"></span>
                 </div>
 
-                <!-- Display Number -->
                 <div class="flex justify-between items-center pb-3 border-b border-gray-200">
                     <span class="text-sm font-semibold text-gray-600">Número de Comprobante:</span>
                     <span class="font-mono text-base font-bold text-gray-900" x-text="invoice.displayNumber"></span>
                 </div>
 
-                <!-- Email Status -->
                 <div class="pb-3 border-b border-gray-200">
                     <div class="flex items-center gap-2">
                         <span class="text-sm font-semibold text-gray-600">Email al Cliente:</span>
@@ -1011,14 +965,12 @@
                     <div x-show="invoice.emailError" class="mt-2 text-xs text-amber-600" x-text="invoice.emailError"></div>
                 </div>
 
-                <!-- Total Amount -->
                 <div class="flex justify-between items-center pt-2">
                     <span class="text-base font-bold text-gray-900">Total:</span>
                     <span class="font-mono text-2xl font-black text-gray-900" x-text="formatCurrency(invoice.totalAmount)"></span>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="space-y-3">
                 <div class="flex gap-3">
                     <button
@@ -1041,7 +993,6 @@
         </div>
     </div>
 
-    <!-- Error Toast -->
     <div
         x-show="errorMessage"
         x-transition
@@ -1056,7 +1007,6 @@
         </div>
     </div>
 
-    <!-- Success Toast -->
     <div
         x-show="successMessage"
         x-transition
@@ -1305,40 +1255,21 @@
                 },
 
                 getCurrentReceiptType() {
-                    // Determina el tipo de comprobante actual según el contexto
-
                     if (this.customer.id) {
-                        // Si hay cliente asignado, usar su categoría
                         return this.determineReceiptType(this.customer.taxCategory, true);
                     } else if (this.customerMode === 'create') {
-                        // Si está en modo crear, mostrar vista previa con la categoría del formulario
                         return this.determineReceiptType(this.newCustomer.taxCategory, true);
                     } else {
-                        // Sin cliente = Ticket (venta sin identificación)
                         return this.determineReceiptType(null, false);
                     }
                 },
 
                 determineReceiptType(customerCategory, hasCustomer) {
-                    // Matriz AFIP/ARCA para determinación de comprobante
-                    // Emisor: RI (Responsable Inscripto)
-
                     if (this.issuerTaxCategory === 'RI') {
-                        if (!hasCustomer) {
-                            // Sin cliente identificado = Ticket (Factura C)
-                            // Para compras menores al tope ARCA (~$190k)
-                            return 'Ticket';
-                        }
-
-                        if (customerCategory === 'RI') {
-                            // RI → RI = Factura A
-                            return 'Factura A';
-                        } else {
-                            // RI → CF/MT/EX = Factura B
-                            return 'Factura B';
-                        }
+                        if (!hasCustomer) return 'Ticket';
+                        if (customerCategory === 'RI') return 'Factura A';
+                        return 'Factura B';
                     } else {
-                        // Emisor MT, CF, EX → siempre Factura C
                         return 'Factura C';
                     }
                 },
@@ -1354,34 +1285,16 @@
                 },
 
                 canCreateCustomer() {
-                    // Nombre y apellido obligatorios
-                    if (!this.newCustomer.firstName.trim() || !this.newCustomer.lastName.trim()) {
-                        return false;
-                    }
-
-                    // Email obligatorio para envío de comprobante AFIP
-                    if (!this.newCustomer.email.trim()) {
-                        return false;
-                    }
-
-                    // Validación básica de formato email
+                    if (!this.newCustomer.firstName.trim() || !this.newCustomer.lastName.trim()) return false;
+                    if (!this.newCustomer.email.trim()) return false;
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(this.newCustomer.email)) {
-                        return false;
-                    }
-
-                    // Si es Responsable Inscripto o Monotributo, CUIT es obligatorio
-                    if ((this.newCustomer.taxCategory === 'RI' || this.newCustomer.taxCategory === 'MT')
-                        && !this.newCustomer.taxId.trim()) {
-                        return false;
-                    }
-
+                    if (!emailRegex.test(this.newCustomer.email)) return false;
+                    if ((this.newCustomer.taxCategory === 'RI' || this.newCustomer.taxCategory === 'MT') && !this.newCustomer.taxId.trim()) return false;
                     return true;
                 },
 
                 async createCustomer() {
                     if (!this.canCreateCustomer()) return;
-
                     this.isLoading = true;
                     try {
                         const formData = new URLSearchParams();
@@ -1402,7 +1315,6 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            // Asignar el cliente recién creado a la venta
                             const assignFormData = new URLSearchParams();
                             assignFormData.append('sale_id', this.saleId);
                             assignFormData.append('customer_id', data.customer.id);
@@ -1505,7 +1417,6 @@
 
                 async addProduct() {
                     if (!this.canAddProduct()) return;
-
                     this.isLoading = true;
                     this.productError = '';
 
@@ -1523,7 +1434,6 @@
                         const data = await response.json();
 
                         if (data.success) {
-                            // Add item to local state with real ID from backend
                             const newItem = {
                                 id: data.item.id,
                                 sku: data.item.sku,
@@ -1548,7 +1458,6 @@
                 },
 
                 removeLineItem(index) {
-                    // Note: In a full implementation, you'd call the backend to remove the item
                     this.lineItems.splice(index, 1);
                 },
 
@@ -1592,45 +1501,35 @@
                     }).format(value);
                 },
 
-                // Payment methods
+                // Payment methods logic simplified for Backend interaction
                 getSelectedPaymentMethod() {
-                    return this.paymentMethods.find(pm => pm.id === this.newPayment.methodId);
-                },
-
-                isCardPayment() {
-                    const pm = this.getSelectedPaymentMethod();
-                    return pm && (pm.methodType === 'DEBIT' || pm.methodType === 'CREDIT');
-                },
-
-                isCreditCard() {
-                    const pm = this.getSelectedPaymentMethod();
-                    return pm && pm.methodType === 'CREDIT';
+                    return this.paymentMethods.find(pm => pm.id === parseInt(this.newPayment.methodId));
                 },
 
                 openPaymentModal() {
-                    // Pre-fill amount with remaining balance
                     this.newPayment.amount = Math.max(0, this.calculateRemaining());
                     this.newPayment.cardType = '';
                     this.newPayment.installments = 1;
                     this.newPayment.interestRate = 0;
                     this.newPayment.isSubmitting = false;
 
-                    // Set first payment method as default
-                    if (this.paymentMethods.length > 0) {
+                    // Set default if available
+                    if (this.paymentMethods.length > 0 && !this.newPayment.methodId) {
                         this.newPayment.methodId = this.paymentMethods[0].id;
-                        this.updatePaymentMethodFlags();
                     }
+                    this.updatePaymentMethodFlags();
 
-                    // Clear interest preview
-                    document.getElementById('interest-preview').innerHTML = '';
+                    // Clear HTML preview
+                    const preview = document.getElementById('interest-preview');
+                    if(preview) preview.innerHTML = '';
 
                     this.showPaymentModal = true;
                 },
 
                 closePaymentModal() {
                     this.showPaymentModal = false;
-                    // Clear error messages
-                    document.getElementById('payment-error').innerHTML = '';
+                    const errorContainer = document.getElementById('payment-error');
+                    if(errorContainer) errorContainer.innerHTML = '';
                 },
 
                 updatePaymentMethodFlags() {
@@ -1638,32 +1537,38 @@
                     if (pm) {
                         this.newPayment.requiresCard = (pm.methodType === 'DEBIT' || pm.methodType === 'CREDIT');
                         this.newPayment.isCredit = (pm.methodType === 'CREDIT');
+                    } else {
+                        this.newPayment.requiresCard = false;
+                        this.newPayment.isCredit = false;
                     }
                 },
 
                 resetPaymentDetails() {
-                    // Reset card-specific fields when payment method changes
+                    // Update flags first
+                    this.updatePaymentMethodFlags();
+
+                    // Reset values that depend on method type
                     this.newPayment.cardType = '';
                     this.newPayment.installments = 1;
                     this.newPayment.interestRate = 0;
 
-                    // Update flags based on new payment method
-                    this.updatePaymentMethodFlags();
+                    // Clear HTML preview
+                    const preview = document.getElementById('interest-preview');
+                    if(preview) preview.innerHTML = '';
 
-                    // Clear interest preview
-                    document.getElementById('interest-preview').innerHTML = '';
-
-                    // If not credit, clear interest preview immediately
+                    // Trigger fetch if not credit (to clear or set simple preview)
                     if (!this.newPayment.isCredit) {
                         this.fetchInterestPreview();
                     }
                 },
 
                 async fetchInterestPreview() {
-                    // Only fetch if we have an amount
                     const amount = parseFloat(this.newPayment.amount) || 0;
+                    const previewContainer = document.getElementById('interest-preview');
+                    if (!previewContainer) return;
+
                     if (amount <= 0) {
-                        document.getElementById('interest-preview').innerHTML = '';
+                        previewContainer.innerHTML = '';
                         return;
                     }
 
@@ -1674,15 +1579,13 @@
                             interest_rate: this.newPayment.interestRate
                         });
 
+                        // Rely entirely on Backend HTML generation for complex logic
                         const response = await fetch(`/payments/preview-interest/?${params}`, {
-                            headers: {
-                                'HX-Request': 'true' // Tell backend to return HTML
-                            }
+                            headers: { 'HX-Request': 'true' }
                         });
 
                         if (response.ok) {
-                            const html = await response.text();
-                            document.getElementById('interest-preview').innerHTML = html;
+                            previewContainer.innerHTML = await response.text();
                         }
                     } catch (error) {
                         console.error('Error fetching interest preview:', error);
@@ -1693,11 +1596,13 @@
                     if (this.newPayment.isSubmitting) return;
 
                     this.newPayment.isSubmitting = true;
-                    document.getElementById('payment-error').innerHTML = '';
+                    const errorContainer = document.getElementById('payment-error');
+                    if(errorContainer) errorContainer.innerHTML = '';
 
                     try {
                         const formData = new FormData(event.target);
 
+                        // Use Fetch to submit form data exactly as Django expects
                         const response = await fetch('/payments/add/', {
                             method: 'POST',
                             headers: {
@@ -1708,13 +1613,12 @@
 
                         if (response.ok) {
                             const data = await response.json();
-
-                            // Add payment to local array for UI update
+                            // Update UI solely based on Backend Response
                             const pm = this.getSelectedPaymentMethod();
                             const payment = {
                                 id: data.transaction.id,
-                                method: pm.name,
-                                methodType: pm.methodType,
+                                method: pm ? pm.name : 'Desconocido',
+                                methodType: pm ? pm.methodType : 'OTHER',
                                 amount: parseFloat(data.transaction.amount),
                                 totalAmount: parseFloat(data.transaction.total_amount),
                                 cardType: data.transaction.card_type || null,
@@ -1726,21 +1630,19 @@
                             this.closePaymentModal();
                             this.showSuccess('Pago registrado exitosamente');
                         } else {
-                            // Handle error response
                             const text = await response.text();
-                            document.getElementById('payment-error').innerHTML = text;
+                            if(errorContainer) errorContainer.innerHTML = text;
                         }
                     } catch (error) {
                         console.error('Error submitting payment:', error);
-                        document.getElementById('payment-error').innerHTML =
-                            '<div class="text-red-600 text-sm p-3 bg-red-50 rounded-lg border border-red-200">Error al procesar el pago. Intente nuevamente.</div>';
+                        if(errorContainer) errorContainer.innerHTML = '<div class="text-red-600 text-sm p-3 bg-red-50 rounded-lg border border-red-200">Error de conexión. Intente nuevamente.</div>';
                     }
 
                     this.newPayment.isSubmitting = false;
                 },
 
                 removePayment(index) {
-                    // Note: In a full implementation, you'd call the backend to remove the payment
+                    // TODO: Add backend call to delete transaction: /payments/delete/{id}
                     this.payments.splice(index, 1);
                 },
 
@@ -1796,7 +1698,6 @@
 
                     try {
                         for (const itemId of this.selectedProductsForDiscount) {
-                            // Convert itemId to number to match item.id type
                             const numericItemId = Number(itemId);
                             const item = this.lineItems.find(i => i.id === numericItemId);
                             if (!item) continue;
@@ -1836,7 +1737,6 @@
 
                 // Sale actions
                 viewDetails() {
-                    // Show a summary of the current sale
                     const summary = `
 Venta #${this.saleId}
 Subtotal: ${this.formatCurrency(this.calculateSubtotal())}
@@ -1874,7 +1774,7 @@ Items: ${this.lineItems.length}
                             return;
                         }
 
-                        // Step 2: Process AFIP (orquestador completo: crear factura, emitir CAE, PDF, email)
+                        // Step 2: Process AFIP
                         const afipResponse = await this.fetchAPI(`/invoices/process-sale/${this.saleId}/`, {
                             method: 'POST'
                         });
@@ -1882,7 +1782,6 @@ Items: ${this.lineItems.length}
                         const afipData = await afipResponse.json();
 
                         if (afipData.success) {
-                            // Save invoice data
                             this.invoice = {
                                 id: afipData.invoice_id,
                                 receiptType: afipData.receipt_type,
@@ -1894,11 +1793,9 @@ Items: ${this.lineItems.length}
                                 emailError: afipData.error || ''
                             };
 
-                            // Show success message
                             this.isLoading = false;
                             this.showInvoiceModal = true;
 
-                            // Log warning if email failed
                             if (!afipData.email_sent && afipData.error) {
                                 console.warn('Factura autorizada pero email no enviado:', afipData.error);
                             }
@@ -1915,7 +1812,6 @@ Items: ${this.lineItems.length}
 
                 closeInvoiceModal() {
                     this.showInvoiceModal = false;
-                    // Redirect to new sale after closing modal
                     setTimeout(() => {
                         window.location.href = '/sale/pos/';
                     }, 300);
@@ -1926,14 +1822,11 @@ Items: ${this.lineItems.length}
                         this.showError('No hay factura para descargar');
                         return;
                     }
-
-                    // Abrir PDF en nueva ventana/tab
                     const url = `/invoices/${this.invoice.id}/pdf/`;
                     window.open(url, '_blank');
                 },
 
                 formatReceiptType(receiptType) {
-                    // Si es Factura C y no había cliente identificado, mostrar como "Ticket"
                     if (receiptType === 'Factura C' && !this.customer.id) {
                         return 'Ticket';
                     }
