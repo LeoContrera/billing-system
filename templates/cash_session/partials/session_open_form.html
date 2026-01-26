@@ -1,0 +1,45 @@
+<div class="max-w-md mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Apertura de Caja</h2>
+
+        {% if error %}
+        <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+            <span class="font-medium">Error:</span> {{ error }}
+        </div>
+        {% endif %}
+
+        <form hx-post="{% url 'cash_session:session-control' %}"
+              hx-target="#session-control-container"
+              hx-swap="innerHTML">
+            {% csrf_token %}
+
+            <div class="mb-5">
+                <label for="opening_balance" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Monto Inicial en Caja
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 dark:text-gray-400">
+                        $
+                    </span>
+                    <input type="number"
+                           id="opening_balance"
+                           name="opening_balance"
+                           step="0.01"
+                           min="0"
+                           value="0.00"
+                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-8 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                           placeholder="0.00"
+                           required>
+                </div>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    Ingresa el efectivo inicial con el que abres la caja
+                </p>
+            </div>
+
+            <button type="submit"
+                    class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Abrir Caja
+            </button>
+        </form>
+    </div>
+</div>

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'customers',
     'products',
     'inventory',
+    'cash_session',
     'sale',
     'payments',
     'invoices',

@@ -14,6 +14,7 @@ class Sale(models.Model):
     Venta en el sistema POS.
 
     Attributes:
+        cash_session: Sesión de caja a la que pertenece esta venta
         customer: Cliente asociado a la venta (opcional)
         created_by: Usuario que creó la venta (cajero)
         status: Estado de la venta (PENDING o COMPLETED)
@@ -43,6 +44,13 @@ class Sale(models.Model):
         (COMPLETED, 'Completada'),
     ]
 
+    cash_session = models.ForeignKey(
+        'cash_session.CashSession',
+        on_delete=models.PROTECT,
+        related_name='sales',
+        verbose_name="Sesión de Caja",
+        help_text="Sesión de caja a la que pertenece esta venta"
+    )
     customer = models.ForeignKey(
         'customers.Customer',
         on_delete=models.PROTECT,
