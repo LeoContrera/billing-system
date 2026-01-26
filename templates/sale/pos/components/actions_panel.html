@@ -1,0 +1,36 @@
+<section class="card p-6 shadow-float bg-gray-50">
+    <div class="space-y-3">
+        <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600 font-medium">Total pagado</span>
+            <span class="font-mono font-semibold text-green-600" x-text="formatCurrency(calculateTotalPaid())"></span>
+        </div>
+        <div class="divider"></div>
+        <div class="flex justify-between items-center">
+            <span class="text-sm font-bold text-gray-900">Saldo restante</span>
+            <span
+                class="font-mono text-xl font-black"
+                :class="calculateRemaining() <= 0 ? 'text-green-600' : 'text-amber-600'"
+                x-text="formatCurrency(Math.abs(calculateRemaining()))">
+            </span>
+        </div>
+        <div x-show="calculateRemaining() <= 0" class="pt-2 text-xs text-green-600 text-center font-medium">
+            ✓ Venta completamente pagada
+        </div>
+    </div>
+</section>
+
+<div class="space-y-3">
+    <button
+        @click="viewDetails()"
+        class="btn w-full py-4 bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg font-bold text-sm">
+        Ver Detalles
+    </button>
+
+    <button
+        @click="finalizeSale()"
+        :disabled="!canFinalize()"
+        :class="canFinalize() ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 cursor-pointer shadow-float-lg' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
+        class="btn w-full py-5 text-white rounded-lg font-black text-base transition-all">
+        Finalizar Venta
+    </button>
+</div>

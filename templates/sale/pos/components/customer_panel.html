@@ -1,0 +1,170 @@
+<section class="card p-6 shadow-float">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm uppercase tracking-wider font-bold text-blue-600">Cliente</h2>
+        <span class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">Opcional</span>
+    </div>
+
+    <div class="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+        <div class="text-xs text-amber-700">
+            <span class="font-semibold">💡 Nota:</span> No es necesario identificar al cliente para ventas menores al tope ARCA (aprox. $190.000).
+            Para montos mayores o cuando el cliente lo solicite, complete los datos.
+        </div>
+    </div>
+
+    <div x-show="customer.id" class="p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-sm font-bold text-gray-900" x-text="customer.fullName"></div>
+                <div class="text-xs text-gray-600" x-text="customer.taxId || 'Sin DNI/CUIT'"></div>
+                <div class="text-xs text-gray-600" x-text="customer.taxCategoryDisplay"></div>
+            </div>
+            <button
+                @click="clearCustomer()"
+                class="text-red-600 hover:text-red-700 text-sm font-semibold">
+                Quitar
+            </button>
+        </div>
+    </div>
+
+    <div x-show="!customer.id">
+        <div class="flex gap-2 mb-4">
+            <button
+                @click="customerMode = 'search'"
+                :class="customerMode === 'search' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+                class="btn flex-1 px-4 py-2 rounded-lg text-sm font-semibold">
+                Buscar Existente
+            </button>
+            <button
+                @click="customerMode = 'create'"
+                :class="customerMode === 'create' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+                class="btn flex-1 px-4 py-2 rounded-lg text-sm font-semibold">
+                Crear Nuevo
+            </button>
+        </div>
+
+        <div x-show="customerMode === 'search'" class="relative">
+            <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Buscar Cliente</label>
+            <input
+                type="text"
+                x-model="customerSearch"
+                @input.debounce.300ms="searchCustomers()"
+                @focus="showCustomerResults = true"
+                @click.away="showCustomerResults = false"
+                class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                placeholder="Buscar por nombre o DNI...">
+
+            <div
+                x-show="showCustomerResults && customerResults.length > 0"
+                class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-float-lg max-h-48 overflow-y-auto">
+                <template x-for="c in customerResults" :key="c.id">
+                    <button
+                        @click="selectCustomer(c)"
+                        class="w-full px-4 py-3 text-left hover:bg-blue-50 border-b border-gray-100 last:border-0 transition-colors">
+                        <div class="text-sm font-semibold text-gray-900" x-text="c.full_name"></div>
+                        <div class="text-xs text-gray-600" x-text="c.tax_id || 'Sin DNI/CUIT'"></div>
+                    </button>
+                </template>
+            </div>
+        </div>
+
+        <div x-show="customerMode === 'create'" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Apellido/s</label>
+                    <input
+                        type="text"
+                        x-model="newCustomer.lastName"
+                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                        placeholder="Apellido">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Nombre/s</label>
+                    <input
+                        type="text"
+                        x-model="newCustomer.firstName"
+                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                        placeholder="Nombre">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Email</label>
+                <input
+                    type="email"
+                    x-model="newCustomer.email"
+                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                    placeholder="correo@ejemplo.com">
+                <div class="mt-1 text-xs text-amber-600 font-medium">
+                    * Requerido para envío automático del comprobante AFIP
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Celular</label>
+                <input
+                    type="text"
+                    x-model="newCustomer.phone"
+                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                    placeholder="Número de celular">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Localidad</label>
+                <input
+                    type="text"
+                    x-model="newCustomer.locality"
+                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                    placeholder="Ciudad o localidad">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Dirección</label>
+                <input
+                    type="text"
+                    x-model="newCustomer.address"
+                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900"
+                    placeholder="Dirección completa">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Categoría Tributaria</label>
+                <select
+                    x-model="newCustomer.taxCategory"
+                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900">
+                    <option value="CF">Consumidor Final</option>
+                    <option value="RI">Responsable Inscripto</option>
+                    <option value="MT">Monotributo</option>
+                    <option value="EX">Exento</option>
+                </select>
+                <div class="mt-1 text-xs text-gray-600">
+                    Determina el tipo de comprobante a emitir
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">DNI/CUIT</label>
+                <input
+                    type="text"
+                    x-model="newCustomer.taxId"
+                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm transition-all text-gray-900 font-mono"
+                    placeholder="DNI o CUIT">
+                <div class="mt-1 text-xs text-gray-600">
+                    <span x-show="newCustomer.taxCategory === 'RI'" class="text-amber-600 font-semibold">
+                        * CUIT obligatorio para Responsable Inscripto
+                    </span>
+                    <span x-show="newCustomer.taxCategory !== 'RI'" class="text-gray-500">
+                        DNI para Consumidor Final, CUIT para Monotributo
+                    </span>
+                </div>
+            </div>
+
+            <button
+                @click="createCustomer()"
+                :disabled="!canCreateCustomer() || isLoading"
+                class="btn w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                <span x-show="!isLoading">Crear y Seleccionar Cliente</span>
+                <span x-show="isLoading">Creando...</span>
+            </button>
+        </div>
+    </div>
+</section>

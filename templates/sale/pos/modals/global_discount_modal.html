@@ -1,0 +1,46 @@
+<div
+    x-show="showGlobalDiscountModal"
+    x-cloak
+    @click.self="showGlobalDiscountModal = false"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    style="display: none;">
+    <div class="card p-8 max-w-md w-full animate-slide-in shadow-float-lg" @click.stop>
+        <h3 class="text-xl font-bold mb-6 text-amber-600">Descuento Global</h3>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Porcentaje de Descuento</label>
+                <div class="relative">
+                    <input
+                        type="number"
+                        x-model="tempGlobalDiscountPercentage"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm font-mono text-gray-900"
+                        placeholder="0.00">
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">%</span>
+                </div>
+                <div class="mt-2 text-xs text-gray-600">
+                    Subtotal: <span class="font-mono font-semibold" x-text="formatCurrency(calculateSubtotal())"></span>
+                </div>
+                <div x-show="tempGlobalDiscountPercentage > 0" class="mt-1 text-sm font-semibold text-amber-700">
+                    Descuento a aplicar: <span class="font-mono" x-text="formatCurrency(calculateSubtotal() * tempGlobalDiscountPercentage / 100)"></span>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button
+                    @click="showGlobalDiscountModal = false; tempGlobalDiscountPercentage = 0"
+                    class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button
+                    @click="applyGlobalDiscount()"
+                    class="btn flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-sm">
+                    Aplicar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

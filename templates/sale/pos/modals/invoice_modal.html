@@ -1,0 +1,79 @@
+<div
+    x-show="showInvoiceModal"
+    x-cloak
+    @click.self="closeInvoiceModal()"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    style="display: none;">
+
+    <div class="card p-8 max-w-lg w-full animate-slide-in shadow-float-lg" @click.stop>
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-black text-green-600 mb-2">¡Comprobante Generado!</h3>
+            <p class="text-sm text-gray-600">La venta se finalizó correctamente</p>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-6 space-y-4 mb-6">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200">
+                <span class="text-sm font-semibold text-gray-600">Tipo de Comprobante:</span>
+                <span class="text-base font-bold text-gray-900" x-text="formatReceiptType(invoice.receiptType)"></span>
+            </div>
+
+            <div class="pb-3 border-b border-gray-200">
+                <div class="text-sm font-semibold text-gray-600 mb-2">CAE (Código de Autorización):</div>
+                <div class="font-mono text-xl font-bold text-blue-600 text-center bg-white rounded p-3" x-text="invoice.cae"></div>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200">
+                <span class="text-sm font-semibold text-gray-600">Vencimiento CAE:</span>
+                <span class="font-mono text-sm text-gray-900" x-text="invoice.caeExpiration"></span>
+            </div>
+
+            <div class="flex justify-between items-center pb-3 border-b border-gray-200">
+                <span class="text-sm font-semibold text-gray-600">Número de Comprobante:</span>
+                <span class="font-mono text-base font-bold text-gray-900" x-text="invoice.displayNumber"></span>
+            </div>
+
+            <div class="pb-3 border-b border-gray-200">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-600">Email al Cliente:</span>
+                    <span x-show="invoice.emailSent" class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 border border-green-200 font-medium">
+                        ✓ Enviado
+                    </span>
+                    <span x-show="!invoice.emailSent" class="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200 font-medium">
+                        No enviado
+                    </span>
+                </div>
+                <div x-show="invoice.emailError" class="mt-2 text-xs text-amber-600" x-text="invoice.emailError"></div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <span class="text-base font-bold text-gray-900">Total:</span>
+                <span class="font-mono text-2xl font-black text-gray-900" x-text="formatCurrency(invoice.totalAmount)"></span>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <div class="flex gap-3">
+                <button
+                    @click="downloadPDF()"
+                    class="btn flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-sm">
+                    📄 Ver Comprobante
+                </button>
+                <button
+                    @click="window.print()"
+                    class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50">
+                    🖨️ Imprimir
+                </button>
+            </div>
+            <button
+                @click="closeInvoiceModal()"
+                class="btn w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm">
+                ✓ Nueva Venta
+            </button>
+        </div>
+    </div>
+</div>

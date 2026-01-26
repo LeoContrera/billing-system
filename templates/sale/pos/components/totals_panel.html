@@ -1,0 +1,10 @@
+<section class="card p-8 shadow-float-lg bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
+    <div class="text-center">
+        <div class="text-xs uppercase tracking-widest font-bold text-blue-600 mb-3">Total de Venta</div>
+        <div class="font-mono text-5xl font-black text-gray-900 mb-2" x-text="formatCurrency(calculateTotal())"></div>
+        <div class="text-sm text-gray-600">
+            <span>Subtotal: </span>
+            <span class="font-mono font-semibold" x-text="formatCurrency(calculateSubtotal())"></span>
+        </div>
+    </div>
+</section>
