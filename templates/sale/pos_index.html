@@ -607,121 +607,137 @@
         <div class="card p-8 max-w-lg w-full animate-slide-in shadow-float-lg max-h-[90vh] overflow-y-auto" @click.stop>
             <h3 class="text-xl font-bold mb-6 text-blue-600">Agregar Pago</h3>
 
-            <div class="space-y-4">
-                <!-- Payment Method -->
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Método de Pago</label>
-                    <select
-                        x-model="newPayment.methodId"
-                        @change="onPaymentMethodChange()"
-                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900">
-                        <template x-for="pm in paymentMethods" :key="pm.id">
-                            <option :value="pm.id" x-text="pm.name"></option>
-                        </template>
-                    </select>
-                </div>
+            <!-- Error message container -->
+            <div id="payment-error" class="mb-4"></div>
 
-                <!-- Card Type (only for credit/debit cards) -->
-                <div x-show="isCardPayment()" class="animate-slide-in">
-                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Tipo de Tarjeta</label>
-                    <select
-                        x-model="newPayment.cardType"
-                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900">
-                        <option value="">Seleccionar...</option>
-                        <option value="VISA">VISA</option>
-                        <option value="Mastercard">Mastercard</option>
-                        <option value="American Express">American Express</option>
-                        <option value="Cabal">Cabal</option>
-                        <option value="Naranja">Naranja</option>
-                        <option value="Maestro">Maestro</option>
-                        <option value="Otra">Otra</option>
-                    </select>
-                </div>
+            <form
+                id="payment-form"
+                @submit.prevent="submitPayment($event)">
 
-                <!-- Installments (only for credit cards) -->
-                <div x-show="isCreditCard()" class="animate-slide-in">
-                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Cuotas</label>
-                    <select
-                        x-model="newPayment.installments"
-                        @change="calculateInterest()"
-                        class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900">
-                        <option value="1">1 cuota (sin interés)</option>
-                        <option value="3">3 cuotas</option>
-                        <option value="6">6 cuotas</option>
-                        <option value="9">9 cuotas</option>
-                        <option value="12">12 cuotas</option>
-                        <option value="18">18 cuotas</option>
-                        <option value="24">24 cuotas</option>
-                    </select>
-                </div>
+                <input type="hidden" name="sale_id" value="{{ sale.id }}">
 
-                <!-- Interest Rate (only for credit cards with installments > 1) -->
-                <div x-show="isCreditCard() && newPayment.installments > 1" class="animate-slide-in">
-                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Tasa de Interés (%)</label>
-                    <div class="relative">
-                        <input
-                            type="number"
-                            x-model="newPayment.interestRate"
-                            @input="calculateInterest()"
-                            min="0"
-                            max="100"
-                            step="0.01"
-                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm font-mono text-gray-900"
-                            placeholder="0.00">
-                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">%</span>
+                <div class="space-y-4">
+                    <!-- Payment Method -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Método de Pago</label>
+                        <select
+                            name="payment_method_id"
+                            x-model="newPayment.methodId"
+                            @change="resetPaymentDetails()"
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900"
+                            required>
+                            {% for pm in payment_methods %}
+                            <option value="{{ pm.id }}" data-type="{{ pm.method_type }}">{{ pm.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div class="mt-1 text-xs text-gray-600">
-                        Tasa mensual aplicada al monto base
-                    </div>
-                </div>
 
-                <!-- Amount -->
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Monto Base</label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">$</span>
-                        <input
-                            type="number"
-                            x-model="newPayment.amount"
-                            @input="calculateInterest()"
-                            step="0.01"
-                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pl-8 text-sm font-mono text-gray-900"
-                            placeholder="0.00">
+                    <!-- Card Type (only for credit/debit cards) -->
+                    <div x-show="newPayment.requiresCard" class="animate-slide-in">
+                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Tipo de Tarjeta</label>
+                        <select
+                            name="card_type"
+                            x-model="newPayment.cardType"
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900"
+                            :required="newPayment.requiresCard">
+                            <option value="">Seleccionar...</option>
+                            <option value="VISA">VISA</option>
+                            <option value="MASTERCARD">Mastercard</option>
+                            <option value="AMEX">American Express</option>
+                            <option value="CABAL">Cabal</option>
+                            <option value="NARANJA">Naranja</option>
+                            <option value="MAESTRO">Maestro</option>
+                            <option value="OTHER">Otra</option>
+                        </select>
                     </div>
-                    <div class="mt-2 text-xs text-gray-600">
-                        Saldo restante: <span class="font-mono font-semibold text-amber-600" x-text="formatCurrency(calculateRemaining())"></span>
-                    </div>
-                </div>
 
-                <!-- Total with Interest (only if interest applies) -->
-                <div x-show="newPayment.interestRate > 0 && newPayment.installments > 1" class="p-4 bg-blue-50 rounded-lg border border-blue-200 animate-slide-in">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="text-xs text-blue-700 font-medium uppercase tracking-wide">Total con Interés</div>
-                            <div class="text-xs text-blue-600 mt-1">
-                                <span x-text="newPayment.installments"></span> cuotas de
-                                <span class="font-mono font-semibold" x-text="formatCurrency(newPayment.totalAmount / newPayment.installments)"></span>
-                            </div>
+                    <!-- Installments (only for credit cards) -->
+                    <div x-show="newPayment.isCredit" class="animate-slide-in">
+                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Cuotas</label>
+                        <select
+                            name="installments"
+                            x-model="newPayment.installments"
+                            @change="fetchInterestPreview()"
+                            class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-900">
+                            <option value="1">1 cuota (sin interés)</option>
+                            <option value="3">3 cuotas</option>
+                            <option value="6">6 cuotas</option>
+                            <option value="9">9 cuotas</option>
+                            <option value="12">12 cuotas</option>
+                            <option value="18">18 cuotas</option>
+                            <option value="24">24 cuotas</option>
+                        </select>
+                    </div>
+
+                    <!-- Interest Rate (only for credit cards with installments > 1) -->
+                    <div x-show="newPayment.isCredit && newPayment.installments > 1" class="animate-slide-in">
+                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Tasa de Interés (%)</label>
+                        <div class="relative">
+                            <input
+                                type="number"
+                                name="interest_rate"
+                                x-model="newPayment.interestRate"
+                                @input.debounce.500ms="fetchInterestPreview()"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 text-sm font-mono text-gray-900"
+                                placeholder="0.00">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">%</span>
                         </div>
-                        <div class="font-mono text-2xl font-black text-blue-700" x-text="formatCurrency(newPayment.totalAmount)"></div>
+                        <div class="mt-1 text-xs text-gray-600">
+                            Tasa mensual aplicada al monto base
+                        </div>
+                    </div>
+
+                    <!-- Amount -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Monto Base</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-mono font-semibold">$</span>
+                            <input
+                                type="number"
+                                name="amount"
+                                x-model="newPayment.amount"
+                                @input.debounce.500ms="fetchInterestPreview()"
+                                step="0.01"
+                                min="0.01"
+                                class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 pl-8 text-sm font-mono text-gray-900"
+                                placeholder="0.00"
+                                required>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-600">
+                            Saldo restante: <span class="font-mono font-semibold text-amber-600" x-text="formatCurrency(calculateRemaining())"></span>
+                        </div>
+                    </div>
+
+                    <!-- Interest Preview (loaded from backend) -->
+                    <div id="interest-preview"></div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3 mt-6">
+                        <button
+                            type="button"
+                            @click="closePaymentModal()"
+                            class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50">
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="newPayment.isSubmitting"
+                            class="btn flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!newPayment.isSubmitting">Agregar</span>
+                            <span x-show="newPayment.isSubmitting">
+                                <svg class="animate-spin h-5 w-5 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Procesando...
+                            </span>
+                        </button>
                     </div>
                 </div>
-
-                <!-- Action Buttons -->
-                <div class="flex gap-3 mt-6">
-                    <button
-                        @click="closePaymentModal()"
-                        class="btn flex-1 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-50">
-                        Cancelar
-                    </button>
-                    <button
-                        @click="addPayment()"
-                        :disabled="!isPaymentValid()"
-                        class="btn flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                        Agregar
-                    </button>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -1123,10 +1139,10 @@
                         method: '{{ transaction.payment_method.name|escapejs }}',
                         methodType: '{{ transaction.payment_method.method_type|escapejs }}',
                         amount: {{ transaction.amount }},
-                        totalAmount: {{ transaction.amount }},
-                        cardType: null,
-                        installments: 1,
-                        interestRate: 0
+                        totalAmount: {{ transaction.total_amount }},
+                        cardType: {% if transaction.card_type %}'{{ transaction.card_type|escapejs }}'{% else %}null{% endif %},
+                        installments: {{ transaction.installments }},
+                        interestRate: {{ transaction.interest_rate }}
                     }{% if not forloop.last %},{% endif %}
                     {% endfor %}
                 ],
@@ -1176,7 +1192,9 @@
                     cardType: '',
                     installments: 1,
                     interestRate: 0,
-                    totalAmount: 0
+                    requiresCard: false,
+                    isCredit: false,
+                    isSubmitting: false
                 },
 
                 // Discount modal data
@@ -1590,94 +1608,135 @@
                 },
 
                 openPaymentModal() {
+                    // Pre-fill amount with remaining balance
                     this.newPayment.amount = Math.max(0, this.calculateRemaining());
-                    this.newPayment.totalAmount = this.newPayment.amount;
                     this.newPayment.cardType = '';
                     this.newPayment.installments = 1;
                     this.newPayment.interestRate = 0;
+                    this.newPayment.isSubmitting = false;
+
+                    // Set first payment method as default
                     if (this.paymentMethods.length > 0) {
                         this.newPayment.methodId = this.paymentMethods[0].id;
+                        this.updatePaymentMethodFlags();
                     }
+
+                    // Clear interest preview
+                    document.getElementById('interest-preview').innerHTML = '';
+
                     this.showPaymentModal = true;
                 },
 
                 closePaymentModal() {
                     this.showPaymentModal = false;
+                    // Clear error messages
+                    document.getElementById('payment-error').innerHTML = '';
                 },
 
-                onPaymentMethodChange() {
+                updatePaymentMethodFlags() {
+                    const pm = this.getSelectedPaymentMethod();
+                    if (pm) {
+                        this.newPayment.requiresCard = (pm.methodType === 'DEBIT' || pm.methodType === 'CREDIT');
+                        this.newPayment.isCredit = (pm.methodType === 'CREDIT');
+                    }
+                },
+
+                resetPaymentDetails() {
+                    // Reset card-specific fields when payment method changes
                     this.newPayment.cardType = '';
                     this.newPayment.installments = 1;
                     this.newPayment.interestRate = 0;
-                    this.calculateInterest();
-                },
 
-                calculateInterest() {
-                    const amount = parseFloat(this.newPayment.amount) || 0;
-                    const rate = parseFloat(this.newPayment.interestRate) || 0;
-                    const installments = parseInt(this.newPayment.installments) || 1;
+                    // Update flags based on new payment method
+                    this.updatePaymentMethodFlags();
 
-                    if (this.isCreditCard() && installments > 1 && rate > 0) {
-                        const interestMultiplier = Math.pow(1 + (rate / 100), installments);
-                        this.newPayment.totalAmount = amount * interestMultiplier;
-                    } else {
-                        this.newPayment.totalAmount = amount;
+                    // Clear interest preview
+                    document.getElementById('interest-preview').innerHTML = '';
+
+                    // If not credit, clear interest preview immediately
+                    if (!this.newPayment.isCredit) {
+                        this.fetchInterestPreview();
                     }
                 },
 
-                isPaymentValid() {
+                async fetchInterestPreview() {
+                    // Only fetch if we have an amount
                     const amount = parseFloat(this.newPayment.amount) || 0;
-                    if (amount <= 0) return false;
-                    if (!this.newPayment.methodId) return false;
-
-                    if (this.isCardPayment() && !this.newPayment.cardType) {
-                        return false;
+                    if (amount <= 0) {
+                        document.getElementById('interest-preview').innerHTML = '';
+                        return;
                     }
-
-                    return true;
-                },
-
-                async addPayment() {
-                    if (!this.isPaymentValid()) return;
-
-                    this.isLoading = true;
 
                     try {
-                        const formData = new URLSearchParams();
-                        formData.append('sale_id', this.saleId);
-                        formData.append('payment_method_id', this.newPayment.methodId);
-                        formData.append('amount', this.newPayment.amount);
+                        const params = new URLSearchParams({
+                            amount: this.newPayment.amount,
+                            installments: this.newPayment.installments,
+                            interest_rate: this.newPayment.interestRate
+                        });
 
-                        const response = await this.fetchAPI('/sale/add-payment/', {
+                        const response = await fetch(`/payments/preview-interest/?${params}`, {
+                            headers: {
+                                'HX-Request': 'true' // Tell backend to return HTML
+                            }
+                        });
+
+                        if (response.ok) {
+                            const html = await response.text();
+                            document.getElementById('interest-preview').innerHTML = html;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching interest preview:', error);
+                    }
+                },
+
+                async submitPayment(event) {
+                    if (this.newPayment.isSubmitting) return;
+
+                    this.newPayment.isSubmitting = true;
+                    document.getElementById('payment-error').innerHTML = '';
+
+                    try {
+                        const formData = new FormData(event.target);
+
+                        const response = await fetch('/payments/add/', {
                             method: 'POST',
+                            headers: {
+                                'X-CSRFToken': this.csrfToken,
+                            },
                             body: formData
                         });
 
-                        const data = await response.json();
+                        if (response.ok) {
+                            const data = await response.json();
 
-                        if (data.success) {
+                            // Add payment to local array for UI update
                             const pm = this.getSelectedPaymentMethod();
                             const payment = {
                                 id: data.transaction.id,
                                 method: pm.name,
                                 methodType: pm.methodType,
-                                amount: parseFloat(this.newPayment.amount),
-                                totalAmount: parseFloat(this.newPayment.totalAmount),
-                                cardType: this.newPayment.cardType || null,
-                                installments: parseInt(this.newPayment.installments) || 1,
-                                interestRate: parseFloat(this.newPayment.interestRate) || 0
+                                amount: parseFloat(data.transaction.amount),
+                                totalAmount: parseFloat(data.transaction.total_amount),
+                                cardType: data.transaction.card_type || null,
+                                installments: parseInt(data.transaction.installments) || 1,
+                                interestRate: parseFloat(data.transaction.interest_rate) || 0
                             };
 
                             this.payments.push(payment);
                             this.closePaymentModal();
-                            this.showSuccess('Pago registrado');
+                            this.showSuccess('Pago registrado exitosamente');
                         } else {
-                            this.showError(data.error || 'Error al registrar pago');
+                            // Handle error response
+                            const text = await response.text();
+                            document.getElementById('payment-error').innerHTML = text;
                         }
                     } catch (error) {
-                        this.showError('Error al registrar pago');
+                        console.error('Error submitting payment:', error);
+                        document.getElementById('payment-error').innerHTML =
+                            '<div class="text-red-600 text-sm p-3 bg-red-50 rounded-lg border border-red-200">Error al procesar el pago. Intente nuevamente.</div>';
                     }
-                    this.isLoading = false;
+
+                    this.newPayment.isSubmitting = false;
                 },
 
                 removePayment(index) {
