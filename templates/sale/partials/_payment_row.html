@@ -1,0 +1,79 @@
+{# Template parcial para renderizar una fila de pago #}
+{# Se usa con HTMX para agregar pagos dinámicamente #}
+
+<tr class="table-row" id="payment-{{ transaction.id }}">
+    <!-- Método de Pago -->
+    <td class="px-6 py-4">
+        <div class="flex items-center gap-2">
+            {% if transaction.payment_method.method_type == 'CASH' %}
+                <span class="text-green-600">💵</span>
+            {% elif transaction.payment_method.method_type == 'CREDIT' %}
+                <span class="text-blue-600">💳</span>
+            {% elif transaction.payment_method.method_type == 'DEBIT' %}
+                <span class="text-purple-600">💳</span>
+            {% else %}
+                <span class="text-gray-600">🏦</span>
+            {% endif %}
+            <div>
+                <div class="font-semibold text-gray-900">{{ transaction.payment_method.name }}</div>
+                {% if transaction.card_type %}
+                    <div class="text-xs text-gray-600">{{ transaction.card_type }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </td>
+
+    <!-- Monto Base -->
+    <td class="px-6 py-4">
+        <span class="font-mono text-base font-semibold text-gray-900">
+            $ {{ transaction.amount|floatformat:2 }}
+        </span>
+    </td>
+
+    <!-- Cuotas e Interés -->
+    <td class="px-6 py-4">
+        {% if transaction.installments > 1 %}
+            <div class="text-sm">
+                <div class="font-medium text-gray-900">
+                    {{ transaction.installments }} cuotas
+                </div>
+                <div class="text-xs text-gray-600">
+                    Tasa: {{ transaction.interest_rate }}%
+                </div>
+            </div>
+        {% else %}
+            <span class="text-xs text-gray-500">1 pago</span>
+        {% endif %}
+    </td>
+
+    <!-- Total con Interés -->
+    <td class="px-6 py-4">
+        <div>
+            <span class="font-mono text-lg font-bold text-gray-900">
+                $ {{ transaction.total_amount|floatformat:2 }}
+            </span>
+            {% if transaction.total_amount > transaction.amount %}
+                <div class="text-xs text-amber-600 font-medium">
+                    +$ {{ transaction.total_amount|add:"-"|add:transaction.amount|floatformat:2 }} interés
+                </div>
+            {% endif %}
+        </div>
+    </td>
+
+    <!-- Fecha -->
+    <td class="px-6 py-4 text-sm text-gray-600">
+        {{ transaction.created_at|date:"d/m/Y H:i" }}
+    </td>
+
+    <!-- Acciones -->
+    <td class="px-6 py-4">
+        <button
+            hx-delete="{% url 'payments:delete_payment' transaction.id %}"
+            hx-confirm="¿Eliminar este pago?"
+            hx-target="#payment-{{ transaction.id }}"
+            hx-swap="outerHTML swap:0.3s"
+            class="text-red-600 hover:text-red-700 font-medium text-sm">
+            Eliminar
+        </button>
+    </td>
+</tr>

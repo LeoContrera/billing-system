@@ -53,7 +53,11 @@ class Transaction(models.Model):
     Attributes:
         sale: Venta a la que pertenece este pago
         payment_method: Método de pago utilizado
-        amount: Monto del pago (debe ser positivo)
+        amount: Monto base del pago (debe ser positivo)
+        card_type: Tipo de tarjeta (VISA, Mastercard, etc.) si aplica
+        installments: Número de cuotas para tarjetas de crédito
+        interest_rate: Tasa de interés mensual (%) para financiación
+        total_amount: Monto total incluyendo intereses
         created_at: Fecha y hora del registro
         created_by: Usuario que registró el pago
 
@@ -63,7 +67,18 @@ class Transaction(models.Model):
     Patrones ORM:
         - on_delete=PROTECT previene borrado accidental de datos críticos
         - MinValueValidator valida monto positivo a nivel de BD
+        - Campos opcionales (null=True, blank=True) para tarjetas
     """
+    CARD_TYPE_CHOICES = [
+        ('VISA', 'VISA'),
+        ('MASTERCARD', 'Mastercard'),
+        ('AMEX', 'American Express'),
+        ('CABAL', 'Cabal'),
+        ('NARANJA', 'Naranja'),
+        ('MAESTRO', 'Maestro'),
+        ('OTHER', 'Otra'),
+    ]
+
     sale = models.ForeignKey(
         'sale.Sale',
         on_delete=models.PROTECT,
@@ -76,10 +91,41 @@ class Transaction(models.Model):
         verbose_name="Método de Pago"
     )
     amount = models.DecimalField(
-        "Monto",
+        "Monto Base",
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))]
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text="Monto del pago sin incluir intereses"
+    )
+    card_type = models.CharField(
+        "Tipo de Tarjeta",
+        max_length=20,
+        choices=CARD_TYPE_CHOICES,
+        null=True,
+        blank=True,
+        help_text="Requerido para pagos con tarjeta"
+    )
+    installments = models.PositiveIntegerField(
+        "Número de Cuotas",
+        default=1,
+        validators=[MinValueValidator(1)],
+        help_text="Número de cuotas para tarjetas de crédito"
+    )
+    interest_rate = models.DecimalField(
+        "Tasa de Interés (%)",
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))],
+        help_text="Tasa de interés mensual aplicada"
+    )
+    total_amount = models.DecimalField(
+        "Monto Total",
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text="Monto total incluyendo intereses"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
@@ -92,4 +138,6 @@ class Transaction(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
+        if self.installments > 1:
+            return f"{self.payment_method.name} - ${self.amount} ({self.installments}x)"
         return f"{self.payment_method.name} - ${self.amount}"
