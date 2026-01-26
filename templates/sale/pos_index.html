@@ -1737,7 +1737,9 @@
 
                     try {
                         for (const itemId of this.selectedProductsForDiscount) {
-                            const item = this.lineItems.find(i => i.id === itemId);
+                            // Convert itemId to number to match item.id type
+                            const numericItemId = Number(itemId);
+                            const item = this.lineItems.find(i => i.id === numericItemId);
                             if (!item) continue;
 
                             const baseAmount = item.quantity * item.unitPrice;
