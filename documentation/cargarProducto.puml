@@ -1,0 +1,232 @@
+@startuml
+
+skinparam style strictuml
+
+skinparam responseMessageBelowArrow true
+
+autonumber
+
+
+
+actor "Cajero" as User
+
+participant "Browser\n(HTMX UI)" as UI
+
+
+
+box "Django: Presentation Layer" #F3F4F6
+
+    participant "SaleView" as View
+
+end box
+
+
+
+box "Django: Domain/Service Layer" #E0E7FF
+
+    participant "CustomerService" as CustSvc
+
+    participant "SaleService" as SaleSvc
+
+    participant "PaymentService" as PaySvc
+
+end box
+
+
+
+database "DB (SQLite)" as DB
+
+
+
+title Flujo POS: Clientes, Productos, Pagos y Cierre
+
+
+
+== Fase 0: Identificación del Cliente (Nueva Lógica) ==
+
+
+
+User -> UI: Escribe en campo "Nombre/DNI"
+
+UI -> View: GET /customers/search/?q=... \n(HTMX trigger change delay:500ms)
+
+activate View
+
+    View -> CustSvc: search_customer(query)
+
+    activate CustSvc
+
+        CustSvc -> DB: Query (LIKE / ILIKE)
+
+        CustSvc --> View: Lista de coincidencias
+
+    deactivate CustSvc
+
+    View --> UI: Muestra desplegable de clientes
+
+deactivate View
+
+
+
+User -> UI: Selecciona Cliente (o crea uno nuevo)
+
+UI -> View: POST /sale/set-customer/\n(sale_id, customer_id)
+
+activate View
+
+    View -> SaleSvc: set_sale_customer(sale_id, customer_id)
+
+    activate SaleSvc
+
+        SaleSvc -> DB: Sale.customer = customer_id
+
+        SaleSvc --> View: Cliente Asignado
+
+    deactivate SaleSvc
+
+    View --> UI: Rellena inputs (Nombre, Apellido, Tel) y bloquea edición
+
+deactivate View
+
+
+
+== Fase 1: Registro de Productos ==
+
+
+
+User -> UI: Ingresa SKU y Cantidad
+
+UI -> View: POST /sale/add-item/\n(HTMX Form)
+
+activate View
+
+    
+
+    View -> SaleSvc: add_line_item(sale_id, sku, qty)
+
+    activate SaleSvc
+
+        SaleSvc -> DB: Producto.get(sku) & Create LineItem
+
+        SaleSvc -> SaleSvc: update_sale_totals()
+
+        SaleSvc --> View: Venta actualizada
+
+    deactivate SaleSvc
+
+
+
+    View --> UI: Fila nueva en tabla y Total actualizado
+
+deactivate View
+
+== Fase 2: Aplicación de Descuentos (Nueva Lógica) ==
+
+group Opción A: Descuento Global
+    User -> UI: Clic "Aplicar descuento total"
+    UI -> User: Abre Modal (<dialog>)
+    User -> UI: Ingresa Monto/Porcentaje y confirma
+    UI -> View: POST /sale/discount-global/\n(amount, type)
+    activate View
+        View -> SaleSvc: apply_global_discount(sale_id, amount)
+        activate SaleSvc
+            SaleSvc -> DB: Validar (Descuento < Subtotal)
+            SaleSvc -> DB: Sale.discount = amount
+            SaleSvc -> SaleSvc: recalculate_total()
+            SaleSvc --> View: Venta actualizada
+        deactivate SaleSvc
+        View --> UI: Actualiza HTML del "Total" grande
+    deactivate View
+end
+
+group Opción B: Descuento por Ítem
+    User -> UI: Selecciona producto en tabla y Clic "Desc. por unidad"
+    UI -> View: POST /sale/discount-item/\n(line_item_id, amount)
+    activate View
+        View -> SaleSvc: apply_line_discount(item_id, amount)
+        activate SaleSvc
+            SaleSvc -> DB: Validar (Descuento < Precio)
+            SaleSvc -> DB: LineItem.discount = amount
+            SaleSvc -> SaleSvc: recalculate_total()
+            SaleSvc --> View: Datos actualizados
+        deactivate SaleSvc
+        View --> UI: Actualiza fila de la tabla y Total General
+    deactivate View
+end
+
+
+== Fase 3: Registro de Pagos ==
+
+
+
+User -> UI: Clic "Agregar Pago"
+
+UI -> View: POST /payments/add/\n(HTMX Form)
+
+activate View
+
+    View -> PaySvc: process_payment(...)
+
+    activate PaySvc
+
+        PaySvc -> DB: Create Payment & Calc Restante
+
+        PaySvc --> View: saldo_restante
+
+    deactivate PaySvc
+
+    View --> UI: Tabla pagos actualizada
+
+deactivate View
+
+
+
+== Fase 4: Concreción de Venta ==
+
+
+
+User -> UI: Clic **"Finalizar"**
+
+UI -> View: POST /sale/finalize/
+
+activate View
+
+    note right: Inicio Transacción Atómica
+
+    View -> SaleSvc: finalize_sale(sale_id)
+
+    activate SaleSvc
+
+        SaleSvc -> DB: select_for_update() (Stock)
+
+        alt Saldo Cubierto
+
+            SaleSvc -> DB: Descontar Stock y Cerrar Venta
+
+            SaleSvc --> View: Success
+
+        else Deuda
+
+            SaleSvc --> View: Error
+
+        end
+
+    deactivate SaleSvc
+
+    
+
+    alt Success
+
+        View --> UI: Ticket y Reset
+
+    else Error
+
+        View --> UI: Mensaje Error
+
+    end
+
+deactivate View
+
+
+
+@enduml
