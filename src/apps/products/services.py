@@ -184,6 +184,84 @@ class ProductService:
 
     @staticmethod
     @transaction.atomic
+    def update_product(
+        sku: str,
+        name: Optional[str] = None,
+        price: Optional[Decimal] = None,
+        description: Optional[str] = None,
+        cost: Optional[Decimal] = None,
+    ) -> Product:
+        """
+        Actualiza un producto existente.
+
+        Args:
+            sku: SKU del producto a actualizar
+            name: Nuevo nombre (opcional)
+            price: Nuevo precio (opcional)
+            description: Nueva descripción (opcional)
+            cost: Nuevo costo (opcional)
+
+        Returns:
+            Product: Producto actualizado
+
+        Raises:
+            ValidationError: Si el producto no existe o datos inválidos
+        """
+        try:
+            product = Product.objects.select_for_update().get(sku=sku)
+        except Product.DoesNotExist:
+            raise ValidationError(f"Producto con SKU '{sku}' no encontrado")
+
+        if name is not None:
+            product.name = name
+
+        if price is not None:
+            if price < 0:
+                raise ValidationError("El precio no puede ser negativo")
+            product.price = price
+
+        if description is not None:
+            product.description = description
+
+        if cost is not None:
+            if cost < 0:
+                raise ValidationError("El costo no puede ser negativo")
+            product.cost = cost
+
+        product.save()
+        return product
+
+    @staticmethod
+    @transaction.atomic
+    def toggle_active(sku: str) -> Product:
+        """
+        Alterna el estado activo/inactivo de un producto.
+
+        Args:
+            sku: SKU del producto
+
+        Returns:
+            Product: Producto con estado actualizado
+
+        Raises:
+            ValidationError: Si el producto no existe
+
+        Nota:
+            Se usa soft delete porque los productos pueden estar
+            referenciados en ventas históricas.
+        """
+        try:
+            product = Product.objects.select_for_update().get(sku=sku)
+        except Product.DoesNotExist:
+            raise ValidationError(f"Producto con SKU '{sku}' no encontrado")
+
+        product.is_active = not product.is_active
+        product.save(update_fields=["is_active", "updated_at"])
+
+        return product
+
+    @staticmethod
+    @transaction.atomic
     def deactivate_product(sku: str) -> Product:
         """
         Desactiva producto (soft delete).
@@ -210,3 +288,51 @@ class ProductService:
         product.save(update_fields=["is_active", "updated_at"])
 
         return product
+
+    @staticmethod
+    def list_products(
+        search_query: str = "",
+        order_by: str = "name",
+        show_inactive: bool = False,
+    ) -> QuerySet[Product]:
+        """
+        Lista productos con filtros y ordenamiento.
+
+        Args:
+            search_query: Texto de búsqueda por SKU o nombre
+            order_by: Campo de ordenamiento (name, -name, sku, -sku, price, -price, created_at, -created_at)
+            show_inactive: Si True, incluye productos inactivos
+
+        Returns:
+            QuerySet con productos filtrados y ordenados
+
+        Patrones ORM:
+            - Q objects para consultas OR complejas
+            - Ordenamiento dinámico con order_by()
+            - Filter condicional basado en show_inactive
+        """
+        queryset = Product.objects.all()
+
+        # Filtrar por estado activo/inactivo
+        if not show_inactive:
+            queryset = queryset.filter(is_active=True)
+
+        # Búsqueda por SKU o nombre
+        if search_query:
+            queryset = queryset.filter(
+                Q(sku__icontains=search_query) | Q(name__icontains=search_query)
+            )
+
+        # Validar campo de ordenamiento
+        valid_order_fields = [
+            "name", "-name",
+            "sku", "-sku",
+            "price", "-price",
+            "created_at", "-created_at"
+        ]
+        if order_by in valid_order_fields:
+            queryset = queryset.order_by(order_by)
+        else:
+            queryset = queryset.order_by("name")
+
+        return queryset
