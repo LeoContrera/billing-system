@@ -2,13 +2,31 @@
 
 ## 📋 Descripción General
 
-Sistema de punto de venta (POS) y facturación electrónica construido con Django 6, integrado con AFIP (Administración Federal de Ingresos Públicos) para emisión de comprobantes fiscales en Argentina.
+Sistema de punto de venta (POS) y facturación electrónica construido con Django 5.2, integrado con ARCA (ex-afip) para emisión de comprobantes fiscales en Argentina.
 
 **Stack Tecnológico:**
-- Backend: Django 6.0.1 + Python 3.13+
+- Gestión de paquetes: uv (python dependencies), pnpm (JavaScript dependencies).
+- Runner de comandos: Just
+- Backend: Django 5.2 + Python 3.13+
 - Frontend: HTMX + Alpine.js + Tailwind CSS v4 + Flowbite
 - Base de datos: SQLite con modo WAL
 - Dependencias clave: django-afip, ReportLab
+
+## Development Philosophy
+
+**Target Audience:** This project is designed as a learning resource for Django development.
+
+**Core Principles:**
+- **ORM-First Approach:** All database interactions MUST use Django's ORM (`MyModel.objects...`). Never write raw SQL in views or services.
+- **Clean & Pedagogical Code:** Code should be "Pythonic", readable, and serve as a teaching example.
+- **Modular Architecture:** Business logic separated into distinct apps with clear responsibilities.
+- **Design Patterns:** Apply Gang of Four design patterns where appropriate.
+- **Service Layer Pattern:** Business logic lives in `services.py` files, not in views or models.
+- **Transaction Safety:** Use `transaction.atomic()` for operations that modify multiple records.
+**Settings Path Resolution:**
+- Apps are added to Python path via `sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))`
+- This allows importing apps directly: `import users` instead of `from apps import users`
+- Apps are registered in INSTALLED_APPS as `'users'`, `'sale'`, etc.
 
 ---
 
@@ -70,13 +88,83 @@ Sistema de punto de venta (POS) y facturación electrónica construido con Djang
   - `add_payment()` - Registrar pago con validaciones
 - **Fixtures**: 4 métodos de pago precargados
 
-#### 5. **invoices/** - Facturación Electrónica (★ Core)
+#### 5. **invoices/** - Facturación Electrónica
 - **Modelos**:
   - `Invoice` - Factura local (historial inmutable)
   - `VATAliquot` - Alícuotas de IVA (solo Factura A)
 - **Servicios**: `InvoiceService` (ver sección AFIP)
 
 ---
+
+### Directory Structure
+
+- `src/` - Django project root
+  - `core/` - Project settings, main URLs, WSGI/ASGI config
+  - `apps/` - Django applications (modular architecture)
+    - `users/` - Custom user model (extends AbstractUser)
+    - `sale/` - Sales module
+      - Models: `Sale`, `SaleLineItem`
+      - Business logic in `services.py`
+    - `payments/` - Payment processing module
+      - Models: `PaymentMethod`, `Transaction`
+      - Business logic in `services.py`
+  - `manage.py` - Django management script
+  - `db.sqlite3` - SQLite database (WAL mode enabled)
+
+- `templates/` - Django templates (global)
+  - `sale/` - sale App templates
+  - `products/` - products App templates
+  - `base.html` - Base template with navbar, HTMX, Flowbite integration
+
+- `static/` - Static assets
+  - `css/` - Tailwind CSS files
+    - `input.css` - Source CSS (imports Tailwind + Flowbite plugin)
+    - `output.css` - Compiled CSS (build artifact)
+  - `js/` - JavaScript libraries
+    - `htmx.min.js` - HTMX for dynamic interactions
+    - `flowbite.min.js` - Flowbite components
+
+- `documentation/` - PlantUML diagrams and technical docs
+
+
+
+
+
+### Backend Code Organization Patterns
+
+**Service Layer Pattern:**
+- Business logic lives in `services.py` files within each app
+- Views should be thin - they only handle request/response
+- Services use `transaction.atomic()` for database operations
+- All database access uses Django ORM exclusively
+
+**Example Service Structure:**
+```python
+# apps/sale/services.py
+from django.db import transaction
+
+class SaleService:
+    @transaction.atomic
+    def create_sale(self, user, items):
+        # Business logic using Django ORM
+        sale = Sale.objects.create(...)
+        for item in items:
+            SaleLineItem.objects.create(sale=sale, ...)
+        return sale
+```
+
+**Design Patterns:**
+- Apply Gang of Four patterns where beneficial
+- Service Layer for business logic
+- Repository pattern implicit through Django ORM
+- Consider Factory, Strategy, or Observer patterns as needed
+
+**ORM Best Practices:**
+- Use `select_related()` and `prefetch_related()` to optimize queries
+- Use `F()` expressions for atomic updates
+- Use `Q()` objects for complex queries
+- Always use `transaction.atomic()` for multi-model operations
+- Never write raw SQL - use ORM query methods
 
 ## 💻 Interfaz POS (Point of Sale)
 
@@ -87,7 +175,7 @@ Interface standalone de una sola página optimizada para cajeros, construida con
 ### Flujo de Venta Completo
 
 #### Fase 0: Identificación de Cliente (Opcional)
-- **Sin cliente**: Venta rápida → genera Ticket (Factura C)
+- **Sin cliente**: Venta rápida → genera Ticket
 - **Con cliente**:
   - Búsqueda por nombre o DNI/CUIT
   - Creación rápida con datos básicos
@@ -143,6 +231,35 @@ Total = Subtotal - Descuento Global
 
 ## 🎨 Diseño y UX
 
+### Frontend Development Pattern
+
+This project uses a minimal JavaScript approach:
+- HTMX handles dynamic interactions for server-driven UIs
+- Alpine.js for client-side reactivity in standalone pages (e.g., POS)
+- Flowbite provides pre-built components
+- Tailwind handles styling with utility classes
+- Write server-side views that return HTML fragments for HTMX to swap
+
+When adding new views that use HTMX, ensure they return partial HTML templates that can be swapped into the page.
+
+### Key config consideration for frontend
+
+**Templates:**
+- Global templates in `templates/` (configured via `BASE_DIR.parent / 'templates'`)
+- App-specific templates can go in `apps/<app>/templates/`
+- Base template includes HTMX CSRF token configuration
+
+**Static Files:**
+- Static files served from `static/` directory
+- Tailwind v4 uses new CSS import syntax in `input.css`
+- Flowbite imported as plugin via `@plugin` directive
+
+**Frontend Stack:**
+- Tailwind CSS v4 (CSS-first configuration via `@import`)
+- Flowbite components for UI
+- HTMX for dynamic interactions without JavaScript
+- CSRF token automatically added to HTMX requests in base template
+  
 ### Sistema de Diseño
 
 **Tipografía:**
@@ -293,6 +410,36 @@ uv run python src/manage.py shell
 # Cargar métodos de pago
 uv run python src/manage.py loaddata payments/fixtures/initial_payment_methods.json
 ```
+### Django Management Commands
+
+```bash
+# Create superuser
+uv run python src/manage.py createsuperuser
+
+# Django shell
+uv run python src/manage.py shell
+
+# Run tests
+uv run python src/manage.py test
+```
+
+### Package Management
+```bash
+# Python dependencies (via uv)
+uv add <package>
+uv sync
+
+# JavaScript dependencies (via pnpm)
+pnpm add <package>
+pnpm install
+```
+
+### Code Quality
+```bash
+# Format and lint Python code
+uv run ruff check
+uv run ruff format
+```
 
 ---
 
@@ -352,8 +499,6 @@ Customer.objects.create(
 
 - **DJANGO_AFIP_INTEGRATION.md**: Detalles de integración con AFIP
 - **CLAUDE.md**: Instrucciones completas para desarrollo
-- **IMPLEMENTATION_SUMMARY.md**: Resumen de implementación del POS
-- **INVOICE_INTEGRATION_TEST.md**: Guía de testing de integración AFIP
 
 ---
 
