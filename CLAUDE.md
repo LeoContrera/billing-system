@@ -131,7 +131,7 @@ billing-system/
 ├── templates/                # Global templates
 ├── static/                   # CSS, JavaScript
 ├── documentation/            # Technical docs
-└── billing-skills/           # Claude Code skills (this directory)
+└── .claude/skills/           # Claude Code skills (this directory)
 ```
 
 **Important**: Apps import directly (not via `apps.` prefix):
@@ -188,7 +188,7 @@ urlpatterns = [
 
 ### Modifying Templates
 
-**Read [frontend-design](./billing-skills/frontend-design/SKILL.md) first!**
+**Read [frontend-design](./.claude/skills/frontend-design/SKILL.md) first!**
 
 - Use HTMX for server interactions
 - NO Alpine.js (unless adding complex POS-like page)
@@ -197,7 +197,7 @@ urlpatterns = [
 
 ### Working with AFIP Integration
 
-**Read [afip-integration](./billing-skills/afip-integration/SKILL.md) first!**
+**Read [afip-integration](./.claude/skills/afip-integration/SKILL.md) first!**
 
 The invoice workflow is already implemented. Key points:
 - Automatic receipt type determination (A/B/C)
