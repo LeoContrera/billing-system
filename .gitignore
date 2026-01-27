@@ -3,10 +3,19 @@ __pycache__/
 *.py[cod]
 .venv/
 .env
+
+# SQLite database files
 db.sqlite3
+db.sqlite3-shm
+db.sqlite3-wal
+
+# Django media and static files
 media/
 staticfiles/
+
+# Node.js
 node_modules/
 .npm
+
+# IDE
 .vscode/
-Justfile

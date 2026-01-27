@@ -15,19 +15,22 @@ import os, sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
+sys.path.insert(0, str(BASE_DIR / 'apps'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-eis(bc^s%%ejqd1w!0c^r+oq48%q*o=5ns16zg7lw=v8vp8ctc'
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    'django-insecure-eis(bc^s%%ejqd1w!0c^r+oq48%q*o=5ns16zg7lw=v8vp8ctc'  # Default for development only
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -134,6 +137,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = [
     BASE_DIR.parent / 'static',
 ]
+
+# Directory where collectstatic will collect static files for deployment
+STATIC_ROOT = BASE_DIR.parent / 'staticfiles'
+
+# Media files (uploads)
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR.parent / 'media'
 
 # AFIP Configuration
 AFIP_DEBUG_MODE = os.getenv('AFIP_DEBUG_MODE', 'True').lower() == 'true'
