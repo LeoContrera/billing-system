@@ -1,0 +1,80 @@
+{% load static %}
+
+<!-- Flowbite -->
+<script src="{% static 'js/flowbite.min.js' %}"></script>
+
+<!-- HTMX CSRF Configuration -->
+<script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    });
+</script>
+
+<!-- Alpine.js Dashboard App -->
+<script>
+    function dashboardApp() {
+        return {
+            // State
+            sidebarOpen: window.innerWidth >= 1024, // Open on desktop by default
+            period: 'today', // today, week, month
+            lastUpdate: '{{ now|date:"d/m/Y H:i"|default:"Ahora" }}',
+
+            // Initialize
+            init() {
+                // Update time every minute
+                setInterval(() => {
+                    const now = new Date();
+                    const options = {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    };
+                    this.lastUpdate = now.toLocaleString('es-AR', options);
+                }, 60000); // Every minute
+
+                // Auto-close sidebar on mobile when clicking links
+                this.$watch('sidebarOpen', (value) => {
+                    if (!value && window.innerWidth < 1024) {
+                        document.body.style.overflow = 'auto';
+                    } else if (value && window.innerWidth < 1024) {
+                        document.body.style.overflow = 'hidden';
+                    }
+                });
+
+                // Responsive sidebar handling
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth >= 1024) {
+                        this.sidebarOpen = true;
+                        document.body.style.overflow = 'auto';
+                    } else {
+                        this.sidebarOpen = false;
+                    }
+                });
+            },
+
+            // Methods
+            formatCurrency(value) {
+                return new Intl.NumberFormat('es-AR', {
+                    style: 'currency',
+                    currency: 'ARS',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(value);
+            },
+
+            formatDate(date) {
+                return new Date(date).toLocaleDateString('es-AR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        };
+    }
+</script>
+
+{% block extra_scripts %}{% endblock %}

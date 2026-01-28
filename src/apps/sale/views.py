@@ -63,7 +63,7 @@ def create_sale(request):
         'sale': sale,
         'payment_methods': payment_methods,
     }
-    return render(request, 'sale/sale_create.html', context)
+    return render(request, 'sale/pos_index.html', context)
 
 
 @login_required

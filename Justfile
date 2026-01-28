@@ -1,7 +1,13 @@
 # Cross-platform shell configuration
 # Windows users: Install Git Bash for full compatibility
 # Most commands work with PowerShell, but some require bash
-set shell := if os() == "windows" { ["powershell.exe", "-NoLogo", "-Command"] } else { ["bash", "-c"] }
+# 1. Configuración por defecto (Linux/macOS)
+# Tu EndeavourOS usará esto nativamente.
+set shell := ["bash", "-uc"]
+
+# 2. Sobreescritura específica para Windows
+# Just cambiará a esto automáticamente solo si detecta Windows.
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
 default:
     @just --list
@@ -12,11 +18,11 @@ run:
 
 # Watch and rebuild CSS on changes (cross-platform)
 watch-css:
-    pnpm dlx @tailwindcss/cli -i ./static/css/input.css -o ./static/css/output.css --watch
+    npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch
 
 # Build and minify CSS for production (cross-platform)
 build-css:
-    pnpm dlx @tailwindcss/cli -i ./static/css/input.css -o ./static/css/output.css --minify
+    npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify
 
 # AFIP Testing Recipes
 # Note: These commands use Python file execution instead of shell redirection for cross-platform compatibility

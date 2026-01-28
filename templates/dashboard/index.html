@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Principal{% endblock %}
+
+{% block content %}
+<!-- Dashboard Content -->
+<div class="p-8 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard Principal</h1>
+        <div class="flex items-center gap-4">
+            <!-- Period Selector -->
+            <div class="flex items-center gap-2 bg-white rounded-lg shadow px-2 py-1">
+                <button
+                    @click="period = 'today'"
+                    :class="period === 'today' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'"
+                    class="px-4 py-2 rounded-md text-sm font-medium transition-all">
+                    Hoy
+                </button>
+                <button
+                    @click="period = 'week'"
+                    :class="period === 'week' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'"
+                    class="px-4 py-2 rounded-md text-sm font-medium transition-all">
+                    Semana
+                </button>
+                <button
+                    @click="period = 'month'"
+                    :class="period === 'month' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'"
+                    class="px-4 py-2 rounded-md text-sm font-medium transition-all">
+                    Mes
+                </button>
+            </div>
+            <!-- Last Update -->
+            <div class="text-sm text-gray-500">
+                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span x-text="lastUpdate"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Card: Ventas Brutas Hoy -->
+        <div class="metric-card bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-medium text-gray-700">Ventas Brutas Hoy</h3>
+                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="flex items-baseline space-x-2">
+                <p class="text-3xl font-bold text-gray-900">$150,000</p>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                    ↑ +15%
+                </span>
+            </div>
+        </div>
+
+        <!-- Card: Estado de Caja -->
+        <div class="metric-card bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-medium text-gray-700">Estado de Caja</h3>
+                <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="space-y-1">
+                <p class="text-3xl font-bold text-gray-900">$45,200</p>
+                <p class="text-sm text-green-600 font-medium">● ABIERTA - Turno Mañana</p>
+            </div>
+        </div>
+
+        <!-- Card: Alertas de Stock -->
+        <div class="metric-card bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-medium text-gray-700">Alertas de Stock</h3>
+                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <div class="space-y-1">
+                <p class="text-3xl font-bold text-red-600">5 Productos</p>
+                <p class="text-sm text-gray-500">Stock bajo o agotado</p>
+            </div>
+        </div>
+
+        <!-- Card: Salud Fiscal ARCA -->
+        <div class="metric-card bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-medium text-gray-700">Salud Fiscal ARCA</h3>
+                <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="space-y-1">
+                <p class="text-3xl font-bold text-green-600">Sistema Operativo</p>
+                <p class="text-sm text-gray-500">Última emisión: Hoy 14:32</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart and Tables -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Chart: Rendimiento Semanal -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">Rendimiento Semanal</h2>
+            <div class="h-64 flex items-end justify-between gap-2 px-4">
+                <!-- Animated bar chart -->
+                <div class="flex-1 flex flex-col items-center group">
+                    <div class="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t chart-bar hover:from-blue-700 hover:to-blue-500 cursor-pointer" style="height: 30%; animation-delay: 0.1s"></div>
+                    <span class="text-xs text-gray-500 mt-2 font-medium">1d</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center group">
+                    <div class="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t chart-bar hover:from-blue-700 hover:to-blue-500 cursor-pointer" style="height: 35%; animation-delay: 0.2s"></div>
+                    <span class="text-xs text-gray-500 mt-2 font-medium">2d</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center group">
+                    <div class="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t chart-bar hover:from-blue-700 hover:to-blue-500 cursor-pointer" style="height: 50%; animation-delay: 0.3s"></div>
+                    <span class="text-xs text-gray-500 mt-2 font-medium">3d</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center group">
+                    <div class="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t chart-bar hover:from-blue-700 hover:to-blue-500 cursor-pointer" style="height: 60%; animation-delay: 0.4s"></div>
+                    <span class="text-xs text-gray-500 mt-2 font-medium">4d</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center group">
+                    <div class="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t chart-bar hover:from-blue-700 hover:to-blue-500 cursor-pointer" style="height: 70%; animation-delay: 0.5s"></div>
+                    <span class="text-xs text-gray-500 mt-2 font-medium">5d</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center group">
+                    <div class="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t chart-bar hover:from-blue-700 hover:to-blue-500 cursor-pointer" style="height: 80%; animation-delay: 0.6s"></div>
+                    <span class="text-xs text-gray-500 mt-2 font-medium">6d</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center group">
+                    <div class="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t chart-bar hover:from-blue-700 hover:to-blue-500 cursor-pointer" style="height: 95%; animation-delay: 0.7s"></div>
+                    <span class="text-xs text-gray-500 mt-2 font-medium">7d</span>
+                </div>
+            </div>
+            <div class="mt-6 flex items-center justify-between text-sm text-gray-400 px-4">
+                <span class="font-medium">$0</span>
+                <span class="font-medium">$100</span>
+                <span class="font-medium">$200</span>
+                <span class="font-medium">$250</span>
+            </div>
+        </div>
+
+        <!-- Table: Top Productos en Alerta de Stock -->
+        <div class="metric-card bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Top Productos en Alerta de Stock</h2>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-gray-700">Producto Redamos</span>
+                    <div class="shrink-0 w-32 bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-gray-700">Producto Covsil</span>
+                    <div class="shrink-0 w-32 bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full" style="width: 75%"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-gray-700">Producto Somar</span>
+                    <div class="shrink-0 w-32 bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full" style="width: 45%"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-gray-700">Producto Parris</span>
+                    <div class="shrink-0 w-32 bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full" style="width: 25%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimas Operaciones de Caja -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">Últimas Operaciones de Caja</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Fecha</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cashier</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Diferencia</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">29/11/2020 17:00</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Merina Livita</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600 font-bold">-$150,00</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">09/11/2020 16:00</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Amos Driba</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-bold">+45,00</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">29/11/2020 14:00</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Shaleva</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600 font-bold">-$2,00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
