@@ -100,23 +100,29 @@
         animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
 
-    /* Custom scrollbar */
+    /* Placeholders más claros */
+    input::placeholder, textarea::placeholder, select::placeholder {
+        color: #d1d5db;
+        opacity: 0.6;
+    }
+
+    /* Custom scrollbar - sutil y transparente */
     ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
     }
 
     ::-webkit-scrollbar-track {
-        background: var(--gray-100);
+        background: transparent;
     }
 
     ::-webkit-scrollbar-thumb {
-        background: var(--gray-800);
-        border-radius: 4px;
+        background: rgba(156, 163, 175, 0.3);
+        border-radius: 3px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-        background: var(--gray-900);
+        background: rgba(156, 163, 175, 0.5);
     }
 
     /* Number animation */

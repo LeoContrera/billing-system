@@ -1,36 +1,78 @@
-<section class="card p-6 shadow-float bg-gray-50">
+<!-- Descuentos aplicados (visible solo si hay descuentos) -->
+<section
+    x-show="calculateUnitDiscounts() > 0 || globalDiscountAmount > 0"
+    x-transition
+    class="card p-5 shadow-float bg-amber-50 border border-amber-200">
+    <div class="space-y-2">
+        <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+            </svg>
+            <span class="text-sm font-bold text-amber-800 uppercase tracking-wide">Descuentos Aplicados</span>
+        </div>
+
+        <!-- Descuentos unitarios -->
+        <div x-show="calculateUnitDiscounts() > 0" class="flex justify-between items-center text-sm">
+            <span class="text-amber-700 font-medium">Descuentos unitarios</span>
+            <span class="font-mono font-bold text-amber-800" x-text="formatCurrency(calculateUnitDiscounts())"></span>
+        </div>
+
+        <!-- Descuento global -->
+        <div x-show="globalDiscountAmount > 0" class="flex justify-between items-center text-sm">
+            <span class="text-amber-700 font-medium">
+                Descuento global
+                <span x-show="globalDiscountPercentage > 0" class="text-xs">
+                    (<span x-text="globalDiscountPercentage.toFixed(1)"></span>%)
+                </span>
+            </span>
+            <span class="font-mono font-bold text-amber-800" x-text="formatCurrency(globalDiscountAmount)"></span>
+        </div>
+
+        <div class="divider bg-amber-300"></div>
+
+        <!-- Total de descuentos -->
+        <div class="flex justify-between items-center">
+            <span class="text-amber-900 font-bold text-sm">Total ahorrado</span>
+            <span class="font-mono font-black text-lg text-amber-900" x-text="formatCurrency(calculateUnitDiscounts() + globalDiscountAmount)"></span>
+        </div>
+    </div>
+</section>
+
+<!-- Estado de pago -->
+<section class="card p-5 shadow-float bg-gray-50">
     <div class="space-y-3">
         <div class="flex justify-between items-center">
             <span class="text-sm text-gray-600 font-medium">Total pagado</span>
-            <span class="font-mono font-semibold text-green-600" x-text="formatCurrency(calculateTotalPaid())"></span>
+            <span class="font-mono font-semibold text-lg text-green-600" x-text="formatCurrency(calculateTotalPaid())"></span>
         </div>
         <div class="divider"></div>
         <div class="flex justify-between items-center">
             <span class="text-sm font-bold text-gray-900">Saldo restante</span>
             <span
-                class="font-mono text-xl font-black"
+                class="font-mono text-2xl font-black"
                 :class="calculateRemaining() <= 0 ? 'text-green-600' : 'text-amber-600'"
                 x-text="formatCurrency(Math.abs(calculateRemaining()))">
             </span>
         </div>
-        <div x-show="calculateRemaining() <= 0" class="pt-2 text-xs text-green-600 text-center font-medium">
+        <div x-show="calculateRemaining() <= 0" class="pt-2 text-sm text-green-600 text-center font-semibold">
             ✓ Venta completamente pagada
         </div>
     </div>
 </section>
 
+<!-- Botones de acción -->
 <div class="space-y-3">
     <button
         @click="viewDetails()"
-        class="btn w-full py-4 bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg font-bold text-sm">
+        class="btn w-full py-3.5 bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg font-bold text-sm">
         Ver Detalles
     </button>
 
     <button
         @click="finalizeSale()"
         :disabled="!canFinalize()"
-        :class="canFinalize() ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 cursor-pointer shadow-float-lg' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
-        class="btn w-full py-5 text-white rounded-lg font-black text-base transition-all">
+        :class="canFinalize() ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 cursor-pointer shadow-float-lg' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
+        class="btn w-full py-4 text-white rounded-lg font-black text-base transition-all">
         Finalizar Venta
     </button>
 </div>

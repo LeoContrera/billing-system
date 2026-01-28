@@ -1,5 +1,5 @@
 <section class="card shadow-float">
-    <div class="p-6 pb-4">
+    <div class="p-5 pb-3">
         <h2 class="text-sm uppercase tracking-wider font-bold text-blue-600">Productos</h2>
     </div>
 
@@ -7,44 +7,44 @@
         <table class="w-full">
             <thead>
                 <tr class="table-header">
-                    <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">SKU</th>
-                    <th class="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">Descripción</th>
-                    <th class="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Cant.</th>
-                    <th class="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Precio Unit.</th>
-                    <th class="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Desc.</th>
-                    <th class="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Subtotal</th>
-                    <th class="px-4 py-4"></th>
+                    <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-700">SKU</th>
+                    <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-700">Descripción</th>
+                    <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Cant.</th>
+                    <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-700">P. Unit.</th>
+                    <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Desc.</th>
+                    <th class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-700">Subtotal</th>
+                    <th class="px-4 py-3"></th>
                 </tr>
             </thead>
             <tbody class="bg-white">
                 <template x-for="(item, index) in lineItems" :key="index">
                     <tr class="table-row animate-slide-in">
-                        <td class="px-4 py-4">
-                            <span class="font-mono text-sm font-medium text-amber-600" x-text="item.sku"></span>
+                        <td class="px-4 py-3">
+                            <span class="font-mono text-sm font-semibold text-amber-600" x-text="item.sku"></span>
                         </td>
-                        <td class="px-4 py-4">
-                            <span class="text-sm font-medium text-gray-900" x-text="item.description"></span>
+                        <td class="px-4 py-3">
+                            <span class="text-sm font-semibold text-gray-900" x-text="item.description"></span>
                         </td>
-                        <td class="px-4 py-4 text-right">
-                            <span class="font-mono text-sm font-semibold text-gray-900" x-text="item.quantity"></span>
+                        <td class="px-4 py-3 text-right">
+                            <span class="font-mono text-sm font-bold text-gray-900" x-text="item.quantity"></span>
                         </td>
-                        <td class="px-4 py-4 text-right">
-                            <span class="font-mono text-sm text-gray-700" x-text="formatCurrency(item.unitPrice)"></span>
+                        <td class="px-4 py-3 text-right">
+                            <span class="font-mono text-sm font-medium text-gray-700" x-text="formatCurrency(item.unitPrice)"></span>
                         </td>
-                        <td class="px-4 py-4 text-right">
+                        <td class="px-4 py-3 text-right">
                             <span
-                                class="font-mono text-sm font-semibold"
+                                class="font-mono text-sm font-bold"
                                 :class="item.discountAmount > 0 ? 'text-amber-600' : 'text-gray-400'"
                                 x-text="item.discountAmount > 0 ? formatCurrency(item.discountAmount) : '-'">
                             </span>
                         </td>
-                        <td class="px-4 py-4 text-right">
-                            <span class="font-mono text-base font-bold text-gray-900" x-text="formatCurrency(item.subtotal)"></span>
+                        <td class="px-4 py-3 text-right">
+                            <span class="font-mono text-base font-black text-gray-900" x-text="formatCurrency(item.subtotal)"></span>
                         </td>
-                        <td class="px-4 py-4 text-right">
+                        <td class="px-4 py-3 text-right">
                             <button
                                 @click="removeLineItem(index)"
-                                class="text-red-600 hover:text-red-700 transition-colors text-sm font-semibold">
+                                class="text-red-600 hover:text-red-700 transition-colors text-base font-bold">
                                 ✕
                             </button>
                         </td>
@@ -60,10 +60,10 @@
         </table>
     </div>
 
-    <div class="p-6 pt-4 border-t border-gray-200 bg-gray-50">
+    <div class="p-5 pt-3 border-t border-gray-200 bg-gray-50">
         <button
             @click="openProductModal()"
-            class="btn w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold">
+            class="btn w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold">
             + Agregar Producto
         </button>
     </div>

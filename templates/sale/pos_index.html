@@ -6,14 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS - Venta #{{ sale.id }}</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    {% load static %}
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <meta name="csrf-token" content="{{ csrf_token }}">
 
@@ -21,32 +21,31 @@
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
-            --secondary: #f59e0b;
-            --secondary-dark: #d97706;
             --success: #10b981;
+            --warning: #f59e0b;
             --danger: #ef4444;
             --gray-50: #f9fafb;
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-700: #374151;
+            --gray-800: #1f2937;
             --gray-900: #111827;
         }
 
         * {
             font-variant-numeric: tabular-nums;
+            transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+            transition-duration: 150ms;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--gray-50);
             color: var(--gray-900);
         }
 
         .font-mono {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
         }
 
         .shadow-float {
@@ -55,6 +54,11 @@
 
         .shadow-float-lg {
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        input::placeholder, textarea::placeholder, select::placeholder {
+            color: #d1d5db;
+            opacity: 0.6;
         }
 
         input:focus, textarea:focus, select:focus {
@@ -123,23 +127,28 @@
             animation: slideIn 0.3s ease-out;
         }
 
-        /* Custom scrollbar */
+        /* Custom scrollbar - sutil y transparente */
         ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
+            width: 6px;
+            height: 6px;
         }
 
         ::-webkit-scrollbar-track {
-            background: var(--gray-100);
+            background: transparent;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--gray-300);
-            border-radius: 5px;
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--gray-400);
+            background: rgba(156, 163, 175, 0.5);
+        }
+
+        /* Number animation */
+        .number-animate {
+            font-variant-numeric: tabular-nums;
         }
     </style>
 </head>
@@ -195,30 +204,30 @@
     ]
 })">
     <header class="border-b border-gray-200 bg-white shadow-sm">
-        <div class="px-8 py-5 flex items-center justify-between">
-            <div class="flex items-center gap-6">
+        <div class="px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-5">
                 <div>
-                    <div class="text-xs uppercase tracking-wider text-gray-500 font-medium">Cajero</div>
-                    <div class="text-base font-bold mt-0.5 text-gray-900">{{ user.username }}</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Cajero</div>
+                    <div class="text-lg font-bold text-gray-900">{{ user.username }}</div>
                 </div>
                 <div class="h-8 w-px bg-gray-300"></div>
                 <div>
-                    <div class="text-xs uppercase tracking-wider text-gray-500 font-medium">Venta</div>
-                    <div class="text-base font-mono font-bold mt-0.5 text-blue-600">#{{ sale.id }}</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Venta</div>
+                    <div class="text-lg font-mono font-bold text-blue-600">#{{ sale.id }}</div>
                 </div>
             </div>
 
             <a
                 href="/"
-                class="px-5 py-2 text-sm font-semibold text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg transition-colors">
+                class="px-5 py-2.5 text-sm font-semibold text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg transition-colors">
                 Volver al inicio
             </a>
         </div>
     </header>
 
-    <div class="h-[calc(100vh-73px)] flex">
+    <div class="h-[calc(100vh-65px)] flex">
         <div class="flex-1 overflow-y-auto bg-gray-50">
-            <div class="p-8 space-y-6">
+            <div class="p-6 space-y-5">
 
                 {% include "sale/pos/components/receipt_header.html" %}
 
@@ -231,8 +240,8 @@
             </div>
         </div>
 
-        <div class="w-[460px] border-l border-gray-200 bg-white overflow-y-auto">
-            <div class="p-8 space-y-6">
+        <div class="w-[440px] border-l border-gray-200 bg-white overflow-y-auto">
+            <div class="p-6 space-y-5">
 
                 {% include "sale/pos/components/totals_panel.html" %}
 
@@ -253,6 +262,170 @@
     {% include "sale/pos/modals/product_modal.html" %}
 
     {% include "sale/pos/modals/invoice_modal.html" %}
+
+    <!-- Details Modal -->
+    <div
+        x-show="showDetailsModal"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-50 overflow-y-auto"
+        @click.self="closeDetailsModal()">
+
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20">
+            <!-- Overlay -->
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-20 transition-opacity"></div>
+
+            <!-- Modal Panel -->
+            <div
+                x-show="showDetailsModal"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform scale-95"
+                x-transition:enter-end="opacity-100 transform scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 transform scale-100"
+                x-transition:leave-end="opacity-0 transform scale-95"
+                class="relative bg-white rounded-xl shadow-float-lg max-w-2xl w-full z-10 overflow-hidden">
+
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Detalles de la Venta</h3>
+                            <p class="text-blue-100 text-sm mt-1">Venta #<span class="font-mono" x-text="saleId"></span></p>
+                        </div>
+                        <button
+                            @click="closeDetailsModal()"
+                            class="text-white hover:text-blue-100 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div class="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+
+                    <!-- Cliente -->
+                    <div x-show="customer.id" class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                        <div class="text-xs uppercase tracking-wider text-blue-600 font-bold mb-2">Cliente</div>
+                        <div class="text-base font-bold text-gray-900" x-text="customer.fullName"></div>
+                        <div class="text-sm text-gray-600 mt-1" x-text="customer.taxCategoryDisplay"></div>
+                        <div class="text-sm text-gray-600 font-mono" x-text="customer.taxId || 'Sin DNI/CUIT'"></div>
+                    </div>
+
+                    <!-- Productos -->
+                    <div>
+                        <div class="text-xs uppercase tracking-wider text-gray-500 font-bold mb-3">Productos</div>
+                        <div class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-100 border-b border-gray-200">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-bold text-gray-700 uppercase">Producto</th>
+                                        <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 uppercase">Cant.</th>
+                                        <th class="px-4 py-2 text-right text-xs font-bold text-gray-700 uppercase">Precio</th>
+                                        <th class="px-4 py-2 text-right text-xs font-bold text-gray-700 uppercase">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <template x-for="item in lineItems" :key="item.id">
+                                        <tr>
+                                            <td class="px-4 py-2.5">
+                                                <div class="font-medium text-gray-900" x-text="item.description"></div>
+                                                <div class="text-xs text-amber-600 font-mono" x-text="item.sku"></div>
+                                                <div x-show="item.discountAmount > 0" class="text-xs text-amber-600 mt-1">
+                                                    Desc. unitario: <span class="font-mono font-semibold" x-text="formatCurrency(item.discountAmount)"></span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-2.5 text-center font-mono font-semibold" x-text="item.quantity"></td>
+                                            <td class="px-4 py-2.5 text-right font-mono text-gray-700" x-text="formatCurrency(item.unitPrice)"></td>
+                                            <td class="px-4 py-2.5 text-right font-mono font-bold text-gray-900" x-text="formatCurrency(item.subtotal)"></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown de montos -->
+                    <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 space-y-3">
+                        <div class="text-xs uppercase tracking-wider text-gray-500 font-bold mb-3">Resumen de Montos</div>
+
+                        <div class="flex justify-between items-center text-base">
+                            <span class="text-gray-700 font-medium">Subtotal bruto</span>
+                            <span class="font-mono font-semibold text-gray-900" x-text="formatCurrency(calculateGrossSubtotal())"></span>
+                        </div>
+
+                        <div x-show="calculateUnitDiscounts() > 0" class="flex justify-between items-center text-base text-amber-600">
+                            <span class="font-medium">Descuentos unitarios</span>
+                            <span class="font-mono font-semibold" x-text="'-' + formatCurrency(calculateUnitDiscounts())"></span>
+                        </div>
+
+                        <div x-show="globalDiscountAmount > 0" class="flex justify-between items-center text-base text-amber-600">
+                            <span class="font-medium">Descuento global</span>
+                            <span class="font-mono font-semibold" x-text="'-' + formatCurrency(globalDiscountAmount)"></span>
+                        </div>
+
+                        <div class="divider my-3"></div>
+
+                        <div class="flex justify-between items-center text-lg">
+                            <span class="text-gray-900 font-bold">Total de Venta</span>
+                            <span class="font-mono font-black text-2xl text-blue-600" x-text="formatCurrency(calculateTotal())"></span>
+                        </div>
+                    </div>
+
+                    <!-- Alícuotas de IVA (solo para Factura A) -->
+                    <div x-show="getCurrentReceiptType() === 'Factura A'" class="bg-indigo-50 rounded-lg p-5 border border-indigo-200 space-y-3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="text-xs uppercase tracking-wider text-indigo-700 font-bold">Alícuotas de IVA</span>
+                        </div>
+
+                        <template x-if="calculateVATBreakdown()">
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-indigo-700 font-medium">Neto gravado</span>
+                                    <span class="font-mono font-semibold text-indigo-900" x-text="formatCurrency(calculateVATBreakdown().netAmount)"></span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-indigo-700 font-medium">
+                                        IVA <span x-text="calculateVATBreakdown().vatRate"></span>%
+                                    </span>
+                                    <span class="font-mono font-semibold text-indigo-900" x-text="formatCurrency(calculateVATBreakdown().vatAmount)"></span>
+                                </div>
+                                <div class="divider bg-indigo-300"></div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-indigo-900 font-bold">Total con IVA</span>
+                                    <span class="font-mono font-black text-lg text-indigo-900" x-text="formatCurrency(calculateVATBreakdown().totalAmount)"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Comprobante -->
+                    <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                        <div class="text-xs uppercase tracking-wider text-purple-600 font-bold mb-2">Tipo de Comprobante</div>
+                        <div class="text-xl font-black text-purple-900" x-text="getCurrentReceiptType()"></div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                    <button
+                        @click="closeDetailsModal()"
+                        class="btn w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-bold text-sm">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div
         x-show="errorMessage"

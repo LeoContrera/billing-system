@@ -1,26 +1,19 @@
-<section class="card p-6 shadow-float">
-    <div class="flex items-center justify-between mb-4">
+<section class="card p-5 shadow-float">
+    <div class="flex items-center justify-between mb-3">
         <h2 class="text-sm uppercase tracking-wider font-bold text-blue-600">Cliente</h2>
-        <span class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">Opcional</span>
+        <span class="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200 font-medium">Opcional</span>
     </div>
 
-    <div class="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-        <div class="text-xs text-amber-700">
-            <span class="font-semibold">💡 Nota:</span> No es necesario identificar al cliente para ventas menores al tope ARCA (aprox. $190.000).
-            Para montos mayores o cuando el cliente lo solicite, complete los datos.
-        </div>
-    </div>
-
-    <div x-show="customer.id" class="p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
+    <div x-show="customer.id" class="p-4 bg-blue-50 rounded-lg border border-blue-200 mb-3">
         <div class="flex items-center justify-between">
             <div>
-                <div class="text-sm font-bold text-gray-900" x-text="customer.fullName"></div>
-                <div class="text-xs text-gray-600" x-text="customer.taxId || 'Sin DNI/CUIT'"></div>
-                <div class="text-xs text-gray-600" x-text="customer.taxCategoryDisplay"></div>
+                <div class="text-base font-bold text-gray-900" x-text="customer.fullName"></div>
+                <div class="text-sm text-gray-600 font-mono" x-text="customer.taxId || 'Sin DNI/CUIT'"></div>
+                <div class="text-sm text-gray-600" x-text="customer.taxCategoryDisplay"></div>
             </div>
             <button
                 @click="clearCustomer()"
-                class="text-red-600 hover:text-red-700 text-sm font-semibold">
+                class="text-red-600 hover:text-red-700 text-sm font-bold">
                 Quitar
             </button>
         </div>

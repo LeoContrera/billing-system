@@ -59,6 +59,7 @@ function posApp(initialData) {
         showUnitDiscountModal: false,
         showProductModal: false,
         showInvoiceModal: false,
+        showDetailsModal: false,
 
         // Invoice data
         invoice: {
@@ -99,7 +100,11 @@ function posApp(initialData) {
 
         // Initialize
         init() {
-            if (this.paymentMethods.length > 0) {
+            // Set Efectivo (id=1) as default if available, otherwise use first method
+            const cashMethod = this.paymentMethods.find(pm => pm.id === 1);
+            if (cashMethod) {
+                this.newPayment.methodId = 1;
+            } else if (this.paymentMethods.length > 0) {
                 this.newPayment.methodId = this.paymentMethods[0].id;
             }
         },
@@ -407,11 +412,23 @@ function posApp(initialData) {
         },
 
         // Calculation methods
+        calculateGrossSubtotal() {
+            // Subtotal bruto (sin descuentos)
+            return this.lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+        },
+
+        calculateUnitDiscounts() {
+            // Suma de todos los descuentos unitarios aplicados a los items
+            return this.lineItems.reduce((sum, item) => sum + (item.discountAmount || 0), 0);
+        },
+
         calculateSubtotal() {
+            // Subtotal después de descuentos unitarios
             return this.lineItems.reduce((sum, item) => sum + item.subtotal, 0);
         },
 
         calculateTotal() {
+            // Total final después de todos los descuentos
             const subtotal = this.calculateSubtotal();
             return Math.max(0, subtotal - this.globalDiscountAmount);
         },
@@ -458,8 +475,11 @@ function posApp(initialData) {
             this.newPayment.interestRate = 0;
             this.newPayment.isSubmitting = false;
 
-            // Set default if available
-            if (this.paymentMethods.length > 0 && !this.newPayment.methodId) {
+            // Set Efectivo (id=1) as default if available
+            const cashMethod = this.paymentMethods.find(pm => pm.id === 1);
+            if (cashMethod) {
+                this.newPayment.methodId = 1;
+            } else if (this.paymentMethods.length > 0 && !this.newPayment.methodId) {
                 this.newPayment.methodId = this.paymentMethods[0].id;
             }
             this.updatePaymentMethodFlags();
@@ -682,16 +702,35 @@ function posApp(initialData) {
 
         // Sale actions
         viewDetails() {
-            const summary = `
-Venta #${this.saleId}
-Subtotal: ${this.formatCurrency(this.calculateSubtotal())}
-Descuento: ${this.formatCurrency(this.globalDiscountAmount)}
-Total: ${this.formatCurrency(this.calculateTotal())}
-Pagado: ${this.formatCurrency(this.calculateTotalPaid())}
-Restante: ${this.formatCurrency(this.calculateRemaining())}
-Items: ${this.lineItems.length}
-            `;
-            alert(summary);
+            this.showDetailsModal = true;
+        },
+
+        closeDetailsModal() {
+            this.showDetailsModal = false;
+        },
+
+        // Calculate VAT breakdown (for Factura A)
+        calculateVATBreakdown() {
+            const receiptType = this.getCurrentReceiptType();
+
+            // VAT breakdown only applies for Factura A
+            if (receiptType !== 'Factura A') {
+                return null;
+            }
+
+            // For Factura A, we need to separate VAT from the total
+            // Assuming products include 21% VAT by default
+            const total = this.calculateTotal();
+            const vatRate = 0.21; // 21%
+            const netAmount = total / (1 + vatRate);
+            const vatAmount = total - netAmount;
+
+            return {
+                netAmount: netAmount,
+                vatAmount: vatAmount,
+                vatRate: vatRate * 100,
+                totalAmount: total
+            };
         },
 
         async finalizeSale() {
