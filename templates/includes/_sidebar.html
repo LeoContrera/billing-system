@@ -23,7 +23,7 @@
 <!-- Sidebar -->
 <aside
     x-show="sidebarOpen"
-    @click.away="sidebarOpen = false"
+    @click.away="if (window.innerWidth < 1024) sidebarOpen = false"
     x-transition:enter="transform transition ease-in-out duration-300"
     x-transition:enter-start="-translate-x-full"
     x-transition:enter-end="translate-x-0"
