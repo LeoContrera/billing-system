@@ -30,28 +30,22 @@
 - `determineReceiptType()` - Ahora se obtiene del backend
 - `calculateVATBreakdown()` - Ya existe en `InvoiceService.calculate_taxes()`
 
-### 2. Modularización de App.js
+### 2. Refactorización de App.js
 
 **Estructura anterior:**
 ```
 static/js/pos/
-└── app.js (824 líneas - God Object)
+└── app.js (824 líneas - God Object con lógica de negocio duplicada)
 ```
 
-**Estructura nueva:**
+**Estructura final:**
 ```
 static/js/pos/
-├── modules/
-│   ├── calculator-module.js    (90 líneas)  - Cálculos simples
-│   ├── customer-module.js      (237 líneas) - Gestión de clientes
-│   ├── product-module.js       (159 líneas) - Gestión de productos
-│   ├── payment-module.js       (237 líneas) - Gestión de pagos
-│   ├── discount-module.js      (134 líneas) - Gestión de descuentos
-│   └── invoice-module.js       (118 líneas) - Finalización y facturación
-└── app.js                       (270 líneas) - Orquestador
+└── app.js (792 líneas - Todo integrado, sin lógica de negocio, totalmente reactivo)
 ```
 
-**Reducción:** 824 líneas → 270 líneas (67% reducción en archivo principal)
+**Nota sobre modularización:**
+Inicialmente se intentó modularizar en archivos separados, pero Alpine.js requiere que todo el estado viva en el objeto principal para ser reactivo. La solución final integra todo en un solo archivo con el estado correctamente estructurado para Alpine.js.
 
 ### 3. Módulos Creados
 
@@ -147,16 +141,46 @@ static/js/pos/
 - ✅ `src/apps/sale/urls.py` - Agregada ruta `/preview-receipt-type/`
 
 ### Frontend
-- ✅ `static/js/pos/app.js` - Refactorizado como orquestador (824→270 líneas)
-- ✅ `static/js/pos/modules/calculator-module.js` - Creado
-- ✅ `static/js/pos/modules/customer-module.js` - Creado
-- ✅ `static/js/pos/modules/product-module.js` - Creado
-- ✅ `static/js/pos/modules/payment-module.js` - Creado
-- ✅ `static/js/pos/modules/discount-module.js` - Creado
-- ✅ `static/js/pos/modules/invoice-module.js` - Creado
+- ✅ `static/js/pos/app.js` - Completamente refactorizado (824→792 líneas)
+  - Eliminada lógica de negocio duplicada
+  - Todo el estado integrado para reactividad Alpine.js
+  - Sin módulos externos
+- ❌ `static/js/pos/modules/` - Eliminado (arquitectura no compatible con Alpine.js)
 
 ### Templates
-- ✅ `templates/sale/pos_index.html` - Actualizado para cargar módulos
+- ✅ `templates/sale/pos_index.html` - Simplificado (solo carga app.js)
+
+## Fix de Reactividad (Alpine.js) - SOLUCIÓN FINAL
+
+**Problema raíz:** Alpine.js no puede rastrear cambios en getters/setters que apuntan a objetos externos.
+
+**Solución final:** Eliminar módulos con estado propio. **Todo el estado vive directamente en el objeto Alpine.js**.
+
+```javascript
+// ✅ SOLUCIÓN CORRECTA (v2)
+function posApp(initialData) {
+    return {
+        // Estado vive aquí (Alpine.js lo rastrea automáticamente)
+        customerSearch: '',
+        customerResults: [],
+
+        // Métodos operan sobre this (el objeto Alpine.js)
+        async searchCustomers() {
+            this.customerResults = await fetch(...);
+        }
+    };
+}
+```
+
+**Arquitectura final:**
+- ✅ Todo el estado en el objeto Alpine.js (reactivo)
+- ✅ Sin módulos externos con estado
+- ✅ Sin getters/setters complejos
+- ✅ Alpine.js rastrea TODO automáticamente
+
+**Archivos:**
+- `static/js/pos/app.js` - 792 líneas (todo integrado, completamente funcional)
+- Módulos externos eliminados (ya no se usan)
 
 ## Próximos Pasos (Opcional)
 
