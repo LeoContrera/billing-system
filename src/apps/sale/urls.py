@@ -16,4 +16,5 @@ urlpatterns = [
     path('discount-global/', views.discount_global, name='discount_global'),
     path('discount-item/', views.discount_item, name='discount_item'),
     path('finalize/', views.finalize_sale, name='finalize'),
+    path('preview-receipt-type/', views.preview_receipt_type, name='preview_receipt_type'),
 ]

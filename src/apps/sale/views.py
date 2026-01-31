@@ -294,3 +294,51 @@ def finalize_sale(request):
             'success': False,
             'error': error_message
         }, status=400)
+
+
+@login_required
+@require_http_methods(["GET"])
+def preview_receipt_type(request):
+    """
+    Obtener tipo de comprobante según cliente.
+
+    GET /sale/preview-receipt-type/?customer_tax_category=RI&customer_identified=true
+    JSON: Retorna tipo de comprobante determinado por backend
+
+    Parámetros GET:
+        - customer_tax_category: Categoría fiscal del cliente (CF, RI, MT, EX) o None
+        - customer_identified: 'true' o 'false' (default: 'false')
+
+    Este endpoint mueve la lógica de negocio de determineReceiptType()
+    del frontend al backend, donde corresponde.
+    """
+    from django.http import JsonResponse
+    from invoices.services import InvoiceService
+    from invoices.models import ReceiptType
+
+    customer_tax_category = request.GET.get('customer_tax_category', '').strip()
+    customer_identified = request.GET.get('customer_identified', 'false').lower() == 'true'
+
+    # Si no hay categoría fiscal, asumimos que no hay cliente identificado
+    if not customer_tax_category:
+        customer_identified = False
+        customer_tax_category = None
+
+    # Llamar al servicio de backend (única fuente de verdad)
+    receipt_type = InvoiceService.determine_receipt_type(
+        issuer_tax_category=InvoiceService.ISSUER_TAX_CATEGORY,
+        customer_tax_category=customer_tax_category or '',
+        customer_identified=customer_identified
+    )
+
+    # Mapear el código a nombre amigable
+    receipt_type_display = {
+        ReceiptType.FACTURA_A: 'Factura A',
+        ReceiptType.FACTURA_B: 'Factura B',
+        ReceiptType.FACTURA_C: 'Factura C' if customer_identified else 'Ticket',
+    }.get(receipt_type, 'Ticket')
+
+    return JsonResponse({
+        'receipt_type': receipt_type,
+        'receipt_type_display': receipt_type_display
+    })

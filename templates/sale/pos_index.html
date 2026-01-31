@@ -455,6 +455,14 @@
         </div>
     </div>
 
+    <!-- Load POS modules in order (dependencies first) -->
+    <script src="{% static 'js/pos/modules/calculator-module.js' %}"></script>
+    <script src="{% static 'js/pos/modules/customer-module.js' %}"></script>
+    <script src="{% static 'js/pos/modules/product-module.js' %}"></script>
+    <script src="{% static 'js/pos/modules/payment-module.js' %}"></script>
+    <script src="{% static 'js/pos/modules/discount-module.js' %}"></script>
+    <script src="{% static 'js/pos/modules/invoice-module.js' %}"></script>
+    <!-- Main app orchestrator (loads last, after all modules) -->
     <script src="{% static 'js/pos/app.js' %}"></script>
 </body>
 </html>
