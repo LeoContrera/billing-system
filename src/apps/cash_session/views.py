@@ -17,20 +17,32 @@ from .services import CashSessionService
 
 
 @login_required
+@require_http_methods(["GET"])
+def session_page_view(request):
+    """
+    Página principal de control de caja.
+
+    Renderiza el layout completo con session_control.html (incluye CSS, navbar, etc).
+    HTMX cargará dinámicamente el contenido apropiado desde session_control_htmx_view.
+    """
+    return render(request, 'cash_session/session_control.html')
+
+
+@login_required
 @require_http_methods(["GET", "POST"])
-def session_control_view(request):
+def session_control_htmx_view(request):
     """
-    Control de apertura/cierre de sesión de caja.
+    Endpoint HTMX para control de apertura/cierre de sesión de caja.
 
-    GET /cash-session/control/
-        - Si NO hay sesión activa: Muestra formulario de apertura
-        - Si hay sesión activa: Muestra dashboard de sesión abierta
+    GET (HTMX):
+        - Si NO hay sesión activa: Retorna formulario de apertura (partial)
+        - Si hay sesión activa: Retorna dashboard de sesión abierta (partial)
 
-    POST /cash-session/control/
+    POST (HTMX):
         - Procesa apertura de sesión con monto inicial
-        - Retorna dashboard de sesión abierta (HTMX swap)
+        - Retorna dashboard de sesión abierta (partial para swap)
     """
-    # GET: Renderizar estado actual
+    # GET: Renderizar estado actual (partial)
     if request.method == "GET":
         active_session = CashSessionService.get_active_session(request.user)
 

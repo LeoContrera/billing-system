@@ -8,6 +8,9 @@ from . import views
 app_name = 'cash_session'
 
 urlpatterns = [
-    path('', views.session_control_view, name='session-control'),
-    path('control/', views.session_control_view, name='session-control-alt'),
+    # Página principal (layout completo con CSS)
+    path('', views.session_page_view, name='session-page'),
+
+    # Endpoint HTMX para partials (sin layout)
+    path('control/', views.session_control_htmx_view, name='session-control'),
 ]
