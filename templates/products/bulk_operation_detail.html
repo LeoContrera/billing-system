@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Operación Masiva</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            font-variant-numeric: tabular-nums;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        .font-mono {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .shadow-float {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .btn {
+            font-weight: 600;
+            letter-spacing: 0.025em;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+        }
+
+        .table-header {
+            background: #f3f4f6;
+            border-bottom: 2px solid #2563eb;
+        }
+
+        .table-row {
+            border-bottom: 1px solid #e5e7eb;
+            transition: all 0.15s ease;
+        }
+
+        .table-row:hover {
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body class="h-full antialiased">
+    <!-- Header -->
+    <header class="border-b border-gray-200 bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 font-medium">Detalle</div>
+                    <div class="text-2xl font-black mt-0.5 text-gray-900">Operación Masiva</div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <a
+                    href="{% url 'products:bulk_operations' %}"
+                    class="px-5 py-2 text-sm font-semibold text-purple-700 hover:text-purple-900 border border-purple-300 hover:border-purple-400 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+                    Ver Todas las Operaciones
+                </a>
+                <a
+                    href="{% url 'products:list' %}"
+                    class="px-5 py-2 text-sm font-semibold text-blue-700 hover:text-blue-900 border border-blue-300 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                    Ver Catálogo
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto p-8 space-y-6">
+        <!-- Operation Summary -->
+        <section class="card p-6 shadow-float bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Date & Time -->
+                <div>
+                    <div class="text-xs uppercase tracking-wider text-purple-600 font-semibold mb-1">Fecha y Hora</div>
+                    <div class="text-lg font-black text-purple-900">{{ bulk_operation.changed_at|date:"d/m/Y" }}</div>
+                    <div class="text-sm font-mono text-purple-700">{{ bulk_operation.changed_at|date:"H:i:s" }}</div>
+                </div>
+
+                <!-- Products Count -->
+                <div>
+                    <div class="text-xs uppercase tracking-wider text-purple-600 font-semibold mb-1">Productos Afectados</div>
+                    <div class="text-3xl font-black text-purple-900">{{ bulk_operation.products_count }}</div>
+                </div>
+
+                <!-- Change Percentage -->
+                <div>
+                    <div class="text-xs uppercase tracking-wider text-purple-600 font-semibold mb-1">Ajuste Aplicado</div>
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full
+                        {% if bulk_operation.change_percentage > 0 %}bg-green-100 text-green-700 border-2 border-green-300{% else %}bg-red-100 text-red-700 border-2 border-red-300{% endif %}">
+                        {% if bulk_operation.change_percentage > 0 %}
+                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-xl font-black">+{{ bulk_operation.change_percentage|floatformat:1 }}%</span>
+                        {% else %}
+                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-xl font-black">{{ bulk_operation.change_percentage|floatformat:1 }}%</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- User -->
+                <div>
+                    <div class="text-xs uppercase tracking-wider text-purple-600 font-semibold mb-1">Realizado por</div>
+                    {% if bulk_operation.changed_by %}
+                    <div class="flex items-center gap-2">
+                        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-bold text-indigo-600">
+                                {{ bulk_operation.changed_by.first_name.0|default:bulk_operation.changed_by.username.0|upper }}{{ bulk_operation.changed_by.last_name.0|default:""|upper }}
+                            </span>
+                        </div>
+                        <div class="text-sm font-bold text-purple-900">
+                            {{ bulk_operation.changed_by.get_full_name|default:bulk_operation.changed_by.username }}
+                        </div>
+                    </div>
+                    {% else %}
+                    <span class="text-sm text-gray-500 italic">Sistema</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="mt-6 pt-6 border-t border-purple-200">
+                <div class="text-xs uppercase tracking-wider text-purple-600 font-semibold mb-2">Descripción</div>
+                <p class="text-sm text-purple-900 font-medium">{{ bulk_operation.notes }}</p>
+            </div>
+        </section>
+
+        <!-- Products Table -->
+        <section class="card shadow-float overflow-hidden">
+            <div class="bg-gradient-to-r from-gray-50 to-purple-50 px-6 py-4 border-b-2 border-purple-200">
+                <h3 class="text-sm uppercase tracking-wider font-bold text-purple-600">Productos Actualizados</h3>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="table-header">
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700 w-32">
+                                SKU
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Producto
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700 w-40">
+                                Precio Anterior
+                            </th>
+                            <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-700 w-20">
+                                Cambio
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700 w-40">
+                                Precio Nuevo
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700 w-40">
+                                Diferencia
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white">
+                        {% for record in history %}
+                        <tr class="table-row">
+                            <!-- SKU -->
+                            <td class="px-6 py-4">
+                                <span class="font-mono text-sm font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                                    {{ record.product.sku }}
+                                </span>
+                            </td>
+
+                            <!-- Product Name -->
+                            <td class="px-6 py-4">
+                                <p class="text-sm font-bold text-gray-900">{{ record.product.name }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ record.product.get_category_display }}</p>
+                            </td>
+
+                            <!-- Old Price -->
+                            <td class="px-6 py-4 text-right">
+                                <span class="font-mono text-sm font-semibold text-gray-600">
+                                    $ {{ record.old_price|floatformat:2 }}
+                                </span>
+                            </td>
+
+                            <!-- Change Arrow -->
+                            <td class="px-6 py-4 text-center">
+                                {% if record.is_increase %}
+                                <svg class="h-5 w-5 text-green-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                                {% elif record.is_decrease %}
+                                <svg class="h-5 w-5 text-red-600 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+                                </svg>
+                                {% endif %}
+                            </td>
+
+                            <!-- New Price -->
+                            <td class="px-6 py-4 text-right">
+                                <div class="inline-flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200">
+                                    <span class="font-mono text-sm font-bold text-blue-900">
+                                        $ {{ record.new_price|floatformat:2 }}
+                                    </span>
+                                </div>
+                            </td>
+
+                            <!-- Price Difference -->
+                            <td class="px-6 py-4 text-right">
+                                <span class="font-mono text-sm font-bold {% if record.is_increase %}text-green-600{% elif record.is_decrease %}text-red-600{% else %}text-gray-600{% endif %}">
+                                    {% if record.is_increase %}+{% endif %}$ {{ record.price_difference|floatformat:2 }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer Summary -->
+            <div class="bg-gradient-to-r from-gray-50 to-purple-50 px-6 py-4 border-t-2 border-purple-200">
+                <p class="text-sm font-semibold text-gray-900">
+                    Total de productos actualizados: <span class="font-mono text-lg font-black text-purple-600">{{ history|length }}</span>
+                </p>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

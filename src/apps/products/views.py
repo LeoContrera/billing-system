@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from .models import PriceChangeReason, ProductCategory
 from .services import ProductService
 
 
@@ -71,6 +72,7 @@ def product_create(request):
     try:
         sku = request.POST.get("sku", "").strip().upper()
         name = request.POST.get("name", "").strip()
+        category = request.POST.get("category", "OTHER").strip()
         price_str = request.POST.get("price", "0")
         cost_str = request.POST.get("cost", "")
         description = request.POST.get("description", "").strip()
@@ -80,6 +82,10 @@ def product_create(request):
             raise ValidationError("El SKU es requerido")
         if not name:
             raise ValidationError("El nombre es requerido")
+
+        # Validar categoría
+        if category not in dict(ProductCategory.choices):
+            raise ValidationError("Categoría inválida")
 
         # Convertir precio
         try:
@@ -99,6 +105,7 @@ def product_create(request):
         product = ProductService.create_product(
             sku=sku,
             name=name,
+            category=category,
             price=price,
             description=description,
             cost=cost,
@@ -133,6 +140,7 @@ def product_update(request, sku):
     """
     try:
         name = request.POST.get("name", "").strip()
+        category = request.POST.get("category", "").strip()
         price_str = request.POST.get("price")
         cost_str = request.POST.get("cost", "")
         description = request.POST.get("description", "").strip()
@@ -140,6 +148,10 @@ def product_update(request, sku):
         # Validar campos requeridos
         if not name:
             raise ValidationError("El nombre es requerido")
+
+        # Validar categoría si se proporciona
+        if category and category not in dict(ProductCategory.choices):
+            raise ValidationError("Categoría inválida")
 
         # Convertir precio
         price = None
@@ -161,9 +173,11 @@ def product_update(request, sku):
         product = ProductService.update_product(
             sku=sku,
             name=name,
+            category=category if category else None,
             price=price,
             description=description,
             cost=cost,
+            user=request.user,
         )
 
         messages.success(
@@ -250,3 +264,266 @@ def product_detail(request, sku):
             "is_active": product.is_active,
         }
     )
+
+
+@login_required
+@require_GET
+def bulk_price_update_view(request):
+    """
+    Vista principal para actualización masiva de precios.
+
+    GET /products/actualizar-precios/
+
+    Renderiza la página con el formulario de actualización masiva
+    y la vista previa de productos que serán afectados.
+    """
+    # Obtener todas las categorías disponibles
+    categories = ProductCategory.choices
+
+    # Obtener productos activos por defecto
+    category_filter = request.GET.get("category", "")
+    products = ProductService.list_products(
+        show_inactive=False,
+        order_by="name"
+    )
+
+    # Aplicar filtro de categoría si existe
+    if category_filter:
+        products = products.filter(category=category_filter)
+
+    context = {
+        "categories": categories,
+        "products": products,
+        "selected_category": category_filter,
+    }
+
+    return render(request, "products/bulk_price_update.html", context)
+
+
+@login_required
+@require_GET
+def bulk_price_update_filter(request):
+    """
+    Filtrado dinámico de productos para actualización masiva (HTMX).
+
+    GET /products/actualizar-precios/filtrar/?category=<category>
+
+    Retorna partial HTML con la tabla de productos filtrados.
+    """
+    category_filter = request.GET.get("category", "")
+
+    # Obtener productos activos
+    products = ProductService.list_products(
+        show_inactive=False,
+        order_by="name"
+    )
+
+    # Aplicar filtro de categoría si existe
+    if category_filter:
+        products = products.filter(category=category_filter)
+
+    context = {
+        "products": products,
+        "selected_category": category_filter,
+    }
+
+    return render(request, "products/_bulk_price_table.html", context)
+
+
+@login_required
+@require_POST
+def bulk_price_update_submit(request):
+    """
+    Procesa la actualización masiva de precios.
+
+    POST /products/actualizar-precios/aplicar/
+
+    Form data:
+        - percentage_adjustment: Porcentaje de ajuste (puede ser negativo)
+        - category: Categoría a actualizar (opcional, vacío = todas)
+    """
+    try:
+        # Obtener datos del formulario
+        percentage_str = request.POST.get("percentage_adjustment", "0")
+        category = request.POST.get("category", "").strip()
+
+        # Convertir porcentaje
+        try:
+            percentage_adjustment = Decimal(percentage_str)
+        except (InvalidOperation, ValueError):
+            raise ValidationError("Porcentaje de ajuste inválido")
+
+        # Validar categoría
+        if category and category not in dict(ProductCategory.choices):
+            raise ValidationError("Categoría inválida")
+
+        # Aplicar actualización masiva
+        result = ProductService.bulk_update_prices(
+            percentage_adjustment=percentage_adjustment,
+            category=category if category else None,
+            only_active=True,
+            user=request.user,
+        )
+
+        # Mensaje de éxito
+        category_text = result['category_display'] if result['category'] else "todas las categorías"
+        adjustment_text = f"+{percentage_adjustment}%" if percentage_adjustment > 0 else f"{percentage_adjustment}%"
+
+        messages.success(
+            request,
+            f"Actualización exitosa: {result['updated_count']} producto(s) de {category_text} "
+            f"ajustados en {adjustment_text}"
+        )
+
+    except ValidationError as e:
+        messages.error(request, str(e))
+    except Exception as e:
+        messages.error(request, f"Error al actualizar precios: {str(e)}")
+
+    return redirect("products:bulk_price_update")
+
+
+@login_required
+@require_GET
+def price_history_view(request):
+    """
+    Vista principal del historial de cambios de precios.
+
+    GET /products/historial-precios/
+    GET /products/historial-precios/?sku=<sku>&reason=<reason>&limit=<limit>
+
+    Muestra todos los cambios de precios con filtros opcionales.
+    """
+    # Obtener parámetros de filtro
+    product_sku = request.GET.get("sku", "").strip()
+    reason = request.GET.get("reason", "").strip()
+    limit_str = request.GET.get("limit", "100")
+
+    # Convertir limit
+    try:
+        limit = int(limit_str)
+        if limit < 1 or limit > 500:
+            limit = 100
+    except ValueError:
+        limit = 100
+
+    # Obtener historial filtrado
+    history = ProductService.get_price_history(
+        product_sku=product_sku if product_sku else None,
+        reason=reason if reason else None,
+        limit=limit,
+    )
+
+    # Obtener lista de razones disponibles para el filtro
+    reasons = PriceChangeReason.choices
+
+    # Obtener producto si se filtró por SKU
+    product = None
+    if product_sku:
+        product = ProductService.get_product_info(product_sku)
+
+    context = {
+        "history": history,
+        "reasons": reasons,
+        "selected_sku": product_sku,
+        "selected_reason": reason,
+        "limit": limit,
+        "product": product,
+    }
+
+    return render(request, "products/price_history.html", context)
+
+
+@login_required
+@require_GET
+def price_history_filter(request):
+    """
+    Filtrado dinámico de historial (HTMX).
+
+    GET /products/historial-precios/filtrar/?sku=<sku>&reason=<reason>&limit=<limit>
+
+    Retorna partial HTML con la tabla de historial filtrada.
+    """
+    # Obtener parámetros de filtro
+    product_sku = request.GET.get("sku", "").strip()
+    reason = request.GET.get("reason", "").strip()
+    limit_str = request.GET.get("limit", "100")
+
+    # Convertir limit
+    try:
+        limit = int(limit_str)
+        if limit < 1 or limit > 500:
+            limit = 100
+    except ValueError:
+        limit = 100
+
+    # Obtener historial filtrado
+    history = ProductService.get_price_history(
+        product_sku=product_sku if product_sku else None,
+        reason=reason if reason else None,
+        limit=limit,
+    )
+
+    context = {
+        "history": history,
+    }
+
+    return render(request, "products/_price_history_table.html", context)
+
+
+@login_required
+@require_GET
+def bulk_operations_view(request):
+    """
+    Vista de operaciones masivas realizadas.
+
+    GET /products/operaciones-masivas/
+
+    Muestra un resumen de todas las operaciones masivas de actualización de precios.
+    """
+    # Obtener resumen de operaciones masivas
+    bulk_operations = ProductService.get_bulk_operations()
+
+    context = {
+        "bulk_operations": bulk_operations,
+    }
+
+    return render(request, "products/bulk_operations.html", context)
+
+
+@login_required
+@require_GET
+def bulk_operation_detail(request, bulk_id):
+    """
+    Detalle de una operación masiva específica.
+
+    GET /products/operaciones-masivas/<bulk_id>/
+
+    Muestra todos los cambios de precios de una operación masiva.
+    """
+    # Obtener historial de la operación masiva
+    history = ProductService.get_price_history(
+        bulk_operation_id=bulk_id,
+        limit=500,
+    )
+
+    if not history:
+        messages.error(request, "Operación masiva no encontrada")
+        return redirect("products:bulk_operations")
+
+    # Información general de la operación
+    first_record = history.first()
+
+    context = {
+        "history": history,
+        "bulk_operation": {
+            "id": bulk_id,
+            "changed_at": first_record.changed_at,
+            "changed_by": first_record.changed_by,
+            "notes": first_record.notes,
+            "products_count": history.count(),
+            "change_percentage": first_record.change_percentage,
+        }
+    }
+
+    return render(request, "products/bulk_operation_detail.html", context)

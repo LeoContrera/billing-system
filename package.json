@@ -1,7 +1,7 @@
 {
   "name": "billing-system",
   "version": "1.0.0",
-  "description": "",
+  "description": "This directory contains modular skills for Claude Code to reference when working on the Django billing system.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,5 +23,14 @@
       "@tailwindcss/cli",
       "esbuild"
     ]
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeoContrera/billing-system.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LeoContrera/billing-system/issues"
+  },
+  "homepage": "https://github.com/LeoContrera/billing-system#readme"
 }

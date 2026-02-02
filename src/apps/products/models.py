@@ -7,6 +7,7 @@ de los productos disponibles para venta.
 
 from decimal import Decimal
 
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
@@ -19,6 +20,18 @@ class VATRate(models.TextChoices):
     VAT_5 = '5.00', 'IVA 5%'
     VAT_2_5 = '2.50', 'IVA 2.5%'
     VAT_0 = '0.00', 'IVA 0% (Exento)'
+
+
+class ProductCategory(models.TextChoices):
+    """Categorías de productos."""
+    ELECTRONICS = 'ELECTRONICS', 'Electrónica'
+    FOOD = 'FOOD', 'Alimentos'
+    BEVERAGES = 'BEVERAGES', 'Bebidas'
+    CLOTHING = 'CLOTHING', 'Indumentaria'
+    HARDWARE = 'HARDWARE', 'Ferretería'
+    STATIONERY = 'STATIONERY', 'Librería'
+    HEALTH = 'HEALTH', 'Salud'
+    OTHER = 'OTHER', 'Otros'
 
 
 class Product(models.Model):
@@ -77,6 +90,13 @@ class Product(models.Model):
         default=VATRate.VAT_21,
         help_text="Alícuota de IVA aplicable al producto"
     )
+    category = models.CharField(
+        "Categoría",
+        max_length=20,
+        choices=ProductCategory.choices,
+        default=ProductCategory.OTHER,
+        help_text="Categoría del producto para clasificación"
+    )
     is_active = models.BooleanField(
         "Activo",
         default=True,
@@ -91,6 +111,7 @@ class Product(models.Model):
             models.Index(fields=["sku"]),
             models.Index(fields=["name"]),
             models.Index(fields=["is_active"]),
+            models.Index(fields=["category"]),
         ]
         verbose_name = "Producto"
         verbose_name_plural = "Productos"
@@ -111,3 +132,123 @@ class Product(models.Model):
         if self.cost and self.cost > 0:
             return ((self.price - self.cost) / self.cost) * 100
         return None
+
+
+class PriceChangeReason(models.TextChoices):
+    """Razones para cambio de precio."""
+    BULK_UPDATE = 'BULK_UPDATE', 'Actualización masiva'
+    MANUAL_EDIT = 'MANUAL_EDIT', 'Edición manual'
+    INITIAL_PRICE = 'INITIAL_PRICE', 'Precio inicial'
+    CORRECTION = 'CORRECTION', 'Corrección'
+    PROMOTION = 'PROMOTION', 'Promoción'
+    COST_ADJUSTMENT = 'COST_ADJUSTMENT', 'Ajuste por costos'
+
+
+class PriceHistory(models.Model):
+    """
+    Historial de cambios de precios de productos.
+
+    Attributes:
+        product: Producto al que pertenece el cambio
+        old_price: Precio anterior
+        new_price: Precio nuevo
+        change_percentage: Porcentaje de cambio calculado
+        reason: Razón del cambio (bulk update, manual, etc.)
+        changed_by: Usuario que realizó el cambio
+        changed_at: Fecha y hora del cambio
+        notes: Notas adicionales (opcional)
+        bulk_operation_id: ID para agrupar cambios de operaciones masivas
+
+    Meta:
+        ordering: Ordenado por fecha descendente (más recientes primero)
+        indexes: Índices para optimizar búsquedas
+
+    Patrones:
+        - Denormalización: Guardamos old_price y new_price para mantener historial
+        - SET_NULL en changed_by: Preservar historial aunque usuario se elimine
+        - CASCADE en product: Si producto se elimina, su historial también
+    """
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='price_history',
+        verbose_name="Producto"
+    )
+    old_price = models.DecimalField(
+        "Precio Anterior",
+        max_digits=15,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))]
+    )
+    new_price = models.DecimalField(
+        "Precio Nuevo",
+        max_digits=15,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.00"))]
+    )
+    change_percentage = models.DecimalField(
+        "Porcentaje de Cambio",
+        max_digits=8,
+        decimal_places=2,
+        help_text="Porcentaje de cambio (positivo = aumento, negativo = disminución)"
+    )
+    reason = models.CharField(
+        "Razón del Cambio",
+        max_length=20,
+        choices=PriceChangeReason.choices,
+        default=PriceChangeReason.MANUAL_EDIT
+    )
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='price_changes',
+        verbose_name="Modificado por"
+    )
+    changed_at = models.DateTimeField(
+        "Fecha de Cambio",
+        auto_now_add=True
+    )
+    notes = models.TextField(
+        "Notas",
+        blank=True,
+        help_text="Información adicional sobre el cambio"
+    )
+    bulk_operation_id = models.CharField(
+        "ID de Operación Masiva",
+        max_length=50,
+        blank=True,
+        db_index=True,
+        help_text="ID para agrupar cambios de una misma operación masiva"
+    )
+
+    class Meta:
+        ordering = ['-changed_at']
+        indexes = [
+            models.Index(fields=['product', '-changed_at']),
+            models.Index(fields=['-changed_at']),
+            models.Index(fields=['bulk_operation_id']),
+            models.Index(fields=['changed_by']),
+        ]
+        verbose_name = "Historial de Precio"
+        verbose_name_plural = "Historial de Precios"
+
+    def __str__(self):
+        return f"{self.product.sku}: ${self.old_price} → ${self.new_price} ({self.changed_at.strftime('%Y-%m-%d %H:%M')})"
+
+    @property
+    def price_difference(self):
+        """Calcula la diferencia de precio."""
+        return self.new_price - self.old_price
+
+    @property
+    def is_increase(self):
+        """Indica si fue un aumento de precio."""
+        return self.new_price > self.old_price
+
+    @property
+    def is_decrease(self):
+        """Indica si fue una disminución de precio."""
+        return self.new_price < self.old_price

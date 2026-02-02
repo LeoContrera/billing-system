@@ -123,6 +123,7 @@
                                 @click="openEditModal({
                                     sku: '{{ product.sku }}',
                                     name: '{{ product.name|escapejs }}',
+                                    category: '{{ product.category }}',
                                     price: '{{ product.price }}',
                                     cost: '{{ product.cost|default:'' }}',
                                     description: '{{ product.description|escapejs }}'

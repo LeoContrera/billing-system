@@ -1,5 +1,13 @@
-@import 'tailwindcss';
+
+@import "tailwindcss";
+
+
+
+
+/*esto habia antes*/
+
+/*@import 'tailwindcss';
 @plugin 'flowbite/plugin';
 @source '../../node_modules/flowbite';
-
+*/
 /* Custom styles */
