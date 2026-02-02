@@ -1,0 +1,271 @@
+<!-- Close Form -->
+<div class="space-y-6 animate-slide-in">
+    <!-- Header Card -->
+    <section class="card p-6 shadow-float bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200">
+        <div class="flex items-center gap-4">
+            <div class="flex-shrink-0">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-red-500 rounded-full blur-lg opacity-30"></div>
+                    <div class="relative bg-gradient-to-br from-red-600 to-orange-600 rounded-full p-4">
+                        <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1">
+                <h1 class="text-sm uppercase tracking-wider text-red-600 font-semibold mb-1">Finalizar Turno</h1>
+                <p class="text-2xl font-black text-red-900">Cierre de Caja</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Session Summary -->
+    <section class="card p-6 shadow-float">
+        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-4">Resumen de Sesión</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                <p class="text-xs text-blue-600 font-semibold mb-1 uppercase tracking-wider">Cajero</p>
+                <p class="text-lg font-bold text-blue-900">{{ session.user.get_full_name|default:session.user.username }}</p>
+            </div>
+            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+                <p class="text-xs text-purple-600 font-semibold mb-1 uppercase tracking-wider">Apertura</p>
+                <p class="text-lg font-bold text-purple-900 font-mono">{{ session.opening_timestamp|date:"H:i" }}</p>
+                <p class="text-xs text-purple-600 font-medium mt-1">{{ session.opening_timestamp|date:"d/m/Y" }}</p>
+            </div>
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                <p class="text-xs text-green-600 font-semibold mb-1 uppercase tracking-wider">Monto Inicial</p>
+                <p class="text-lg font-bold text-green-900 font-mono">$ {{ session.opening_balance|floatformat:2 }}</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Expected Balance Info -->
+    <section class="card p-6 shadow-float bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 mt-1">
+                <div class="bg-blue-600 rounded-lg p-3">
+                    <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wide">Balance Esperado</h3>
+                <p class="text-3xl font-black text-blue-600 font-mono mb-2">$ {{ session.opening_balance|floatformat:2 }}</p>
+                <p class="text-sm text-blue-700 leading-relaxed">
+                    Este es el monto que debería haber en caja según los registros del sistema
+                    (monto inicial + ventas - gastos).
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Instructions Card -->
+    <section class="card p-6 shadow-float border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 mt-1">
+                <div class="bg-amber-100 rounded-lg p-2">
+                    <svg class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-sm font-bold text-amber-900 mb-2 uppercase tracking-wide">Instrucciones Importantes</h3>
+                <ul class="space-y-2 text-sm text-amber-800">
+                    <li class="flex items-start gap-2">
+                        <svg class="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span><strong>Cuenta el efectivo</strong> físico presente en caja</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span><strong>Ingresa el monto exacto</strong> que contaste</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span><strong>Revisa las diferencias</strong> antes de confirmar el cierre</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Close Form -->
+    <section class="card shadow-float-lg overflow-hidden">
+        <form
+            hx-post="{% url 'cash_session:close-submit' %}"
+            hx-target="#close-session-container"
+            hx-swap="innerHTML"
+            hx-indicator="#submit-indicator"
+            class="p-8">
+            {% csrf_token %}
+
+            <!-- Closing Balance Input -->
+            <div class="mb-8">
+                <label for="closing_balance" class="block text-xs font-bold text-gray-700 mb-3 uppercase tracking-wider">
+                    Monto Final en Efectivo <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 font-mono font-bold text-2xl">$</span>
+                    <input
+                        type="number"
+                        id="closing_balance"
+                        name="closing_balance"
+                        step="0.01"
+                        min="0"
+                        value="{{ session.opening_balance }}"
+                        required
+                        autofocus
+                        class="block w-full bg-white border-2 border-gray-300 rounded-xl pl-14 pr-6 py-5 text-3xl font-mono font-bold text-gray-900 transition-all hover:border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+                        placeholder="0.00"
+                        oninput="calculateDifference()">
+                </div>
+                <p class="mt-2 text-xs text-gray-500 font-medium">Efectivo contado físicamente en caja</p>
+            </div>
+
+            <!-- Difference Display (will be updated via JavaScript) -->
+            <div id="difference-display" class="mb-8 p-6 rounded-xl border-2 border-gray-200 bg-gray-50">
+                <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Diferencia Detectada</h3>
+                <div class="flex items-baseline gap-3">
+                    <span class="text-4xl font-black font-mono text-gray-400">$ 0.00</span>
+                    <span class="text-sm text-gray-500 font-medium">(Ingresa el monto final para calcular)</span>
+                </div>
+            </div>
+
+            <!-- Quick Amount Buttons -->
+            <div class="mb-8">
+                <p class="block text-xs font-bold text-gray-700 mb-3 uppercase tracking-wider">Ajustes Rápidos</p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <button
+                        type="button"
+                        onclick="adjustBalance(-100)"
+                        class="btn bg-white hover:bg-red-50 border-2 border-gray-300 hover:border-red-400 text-gray-700 hover:text-red-700 rounded-lg py-3 font-bold text-sm shadow-sm">
+                        <span class="font-mono">- $ 100</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="adjustBalance(-10)"
+                        class="btn bg-white hover:bg-red-50 border-2 border-gray-300 hover:border-red-400 text-gray-700 hover:text-red-700 rounded-lg py-3 font-bold text-sm shadow-sm">
+                        <span class="font-mono">- $ 10</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="adjustBalance(10)"
+                        class="btn bg-white hover:bg-green-50 border-2 border-gray-300 hover:border-green-400 text-gray-700 hover:text-green-700 rounded-lg py-3 font-bold text-sm shadow-sm">
+                        <span class="font-mono">+ $ 10</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="adjustBalance(100)"
+                        class="btn bg-white hover:bg-green-50 border-2 border-gray-300 hover:border-green-400 text-gray-700 hover:text-green-700 rounded-lg py-3 font-bold text-sm shadow-sm">
+                        <span class="font-mono">+ $ 100</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+                type="submit"
+                class="btn w-full py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-xl font-bold text-base shadow-float-lg">
+                <span class="flex items-center justify-center gap-2">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Cerrar Caja
+                </span>
+            </button>
+
+            <!-- Loading Indicator -->
+            <div id="submit-indicator" class="htmx-indicator mt-4">
+                <div class="flex items-center justify-center gap-3 text-red-600">
+                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm font-semibold">Cerrando caja...</span>
+                </div>
+            </div>
+        </form>
+
+        <!-- Security Footer -->
+        <div class="bg-gradient-to-r from-gray-50 to-red-50 px-8 py-4 border-t-2 border-gray-200">
+            <div class="flex items-center gap-3 text-xs text-gray-600">
+                <svg class="h-4 w-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                </svg>
+                <span class="font-medium">Acción irreversible - Verifica los montos antes de confirmar el cierre</span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    const expectedBalance = parseFloat('{{ session.opening_balance }}');
+
+    function calculateDifference() {
+        const closingBalance = parseFloat(document.getElementById('closing_balance').value) || 0;
+        const difference = closingBalance - expectedBalance;
+
+        const displayDiv = document.getElementById('difference-display');
+        const absValue = Math.abs(difference);
+
+        let colorClass = 'bg-gray-50 border-gray-200';
+        let textColor = 'text-gray-400';
+        let statusText = 'Sin diferencia';
+        let icon = '';
+
+        if (difference > 0) {
+            colorClass = 'bg-green-50 border-green-300';
+            textColor = 'text-green-600';
+            statusText = 'Excedente';
+            icon = '<svg class="h-6 w-6 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"/></svg>';
+        } else if (difference < 0) {
+            colorClass = 'bg-red-50 border-red-300';
+            textColor = 'text-red-600';
+            statusText = 'Faltante';
+            icon = '<svg class="h-6 w-6 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/></svg>';
+        } else if (closingBalance > 0) {
+            colorClass = 'bg-blue-50 border-blue-300';
+            textColor = 'text-blue-600';
+            statusText = 'Balance perfecto';
+            icon = '<svg class="h-6 w-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+        }
+
+        displayDiv.className = `mb-8 p-6 rounded-xl border-2 ${colorClass} transition-all`;
+        displayDiv.innerHTML = `
+            <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Diferencia Detectada</h3>
+            <div class="flex items-center gap-4">
+                ${icon}
+                <div class="flex-1">
+                    <div class="flex items-baseline gap-3">
+                        <span class="text-4xl font-black font-mono ${textColor}">$ ${absValue.toFixed(2)}</span>
+                        <span class="text-sm font-bold ${textColor}">${statusText}</span>
+                    </div>
+                    ${difference !== 0 ? `
+                    <p class="text-sm ${textColor} mt-2 font-medium">
+                        ${difference > 0 ? 'Hay más efectivo del esperado' : 'Falta efectivo en caja'}
+                    </p>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    function adjustBalance(amount) {
+        const input = document.getElementById('closing_balance');
+        const currentValue = parseFloat(input.value) || 0;
+        const newValue = Math.max(0, currentValue + amount);
+        input.value = newValue.toFixed(2);
+        calculateDifference();
+    }
+
+    // Calculate on page load
+    calculateDifference();
+</script>

@@ -89,3 +89,77 @@ def session_control_htmx_view(request):
                 context,
                 status=400
             )
+
+
+@login_required
+@require_http_methods(["GET"])
+def close_session_page_view(request):
+    """
+    Página de cierre de caja.
+
+    Renderiza el layout completo con close_session.html.
+    Verifica que haya una sesión activa antes de mostrar el formulario.
+    """
+    # Verificar que el usuario tenga una sesión activa
+    active_session = CashSessionService.get_active_session(request.user)
+
+    if not active_session:
+        # Si no hay sesión activa, redirigir a la página de control
+        from django.shortcuts import redirect
+        return redirect('cash_session:session-page')
+
+    context = {
+        'session': active_session,
+    }
+    return render(request, 'cash_session/close_session.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def close_session_htmx_view(request):
+    """
+    Endpoint HTMX para procesar el cierre de sesión.
+
+    POST (HTMX):
+        - Procesa cierre de sesión con monto final
+        - Retorna mensaje de éxito (partial para swap)
+    """
+    try:
+        # Obtener sesión activa
+        active_session = CashSessionService.get_active_session(request.user)
+
+        if not active_session:
+            return render(
+                request,
+                'cash_session/partials/close_error.html',
+                {'error': 'No tienes una sesión activa para cerrar.'},
+                status=400
+            )
+
+        # Obtener monto final del form
+        closing_balance_str = request.POST.get('closing_balance', '0.00')
+        try:
+            closing_balance = Decimal(closing_balance_str)
+        except (InvalidOperation, ValueError):
+            closing_balance = Decimal('0.00')
+
+        # Cerrar sesión (service layer)
+        closed_session = CashSessionService.close_session(
+            session=active_session,
+            closing_balance=closing_balance
+        )
+
+        # Retornar mensaje de éxito (HTMX swap)
+        context = {
+            'session': closed_session,
+        }
+        return render(request, 'cash_session/partials/close_success.html', context)
+
+    except ValidationError as e:
+        # Mostrar error
+        return render(
+            request,
+            'cash_session/partials/close_error.html',
+            {'error': str(e)},
+            status=400
+        )

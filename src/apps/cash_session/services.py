@@ -76,3 +76,33 @@ class CashSessionService:
             user=user,
             status=CashSessionStatus.OPEN
         ).first()
+
+    @staticmethod
+    @transaction.atomic
+    def close_session(session: CashSession, closing_balance: Decimal) -> CashSession:
+        """
+        Cierra una sesión de caja existente.
+
+        Args:
+            session: Sesión de caja a cerrar
+            closing_balance: Balance final de efectivo en caja
+
+        Returns:
+            CashSession: Sesión cerrada
+
+        Raises:
+            ValidationError: Si la sesión ya está cerrada
+
+        Patrón: State Pattern + Guard Clause
+        """
+        # Verificar que la sesión esté abierta
+        if session.status == CashSessionStatus.CLOSED:
+            raise ValidationError("Esta sesión ya está cerrada.")
+
+        # Cerrar sesión
+        session.closing_balance = closing_balance
+        session.closing_timestamp = timezone.now()
+        session.status = CashSessionStatus.CLOSED
+        session.save()
+
+        return session

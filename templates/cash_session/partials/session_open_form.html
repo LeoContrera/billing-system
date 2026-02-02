@@ -1,102 +1,157 @@
-<!-- Header -->
-<div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-2">Apertura de Caja</h2>
-    <p class="text-sm text-gray-600">
-        Registra el monto inicial en efectivo con el que inicias tu turno.
-    </p>
-</div>
+<!-- Opening Form Card -->
+<div class="space-y-6 animate-slide-in">
+    <!-- Header Card -->
+    <section class="card p-6 shadow-float bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200">
+        <div class="flex items-center gap-4">
+            <div class="flex-shrink-0">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-blue-500 rounded-full blur-lg opacity-30"></div>
+                    <div class="relative bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full p-4">
+                        <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-1">
+                <h1 class="text-sm uppercase tracking-wider text-blue-600 font-semibold mb-1">Gestión de Turno</h1>
+                <p class="text-2xl font-black text-blue-900">Apertura de Caja</p>
+            </div>
+        </div>
+    </section>
 
-<!-- Error Message -->
-{% if error %}
-<div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-    <div class="flex items-start gap-3">
-        <svg class="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-        </svg>
-        <div>
-            <p class="text-sm font-medium text-red-800">{{ error }}</p>
+    <!-- Error Message -->
+    {% if error %}
+    <div class="card p-5 shadow-float bg-red-50 border-2 border-red-200 animate-slide-in">
+        <div class="flex items-start gap-3">
+            <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-bold text-red-800 mb-1">Error al abrir caja</p>
+                <p class="text-sm text-red-700">{{ error }}</p>
+            </div>
         </div>
     </div>
-</div>
-{% endif %}
+    {% endif %}
 
-<!-- Opening Form -->
-<div class="bg-white rounded-lg border border-gray-200 p-6">
-    <form hx-post="{% url 'cash_session:session-control' %}"
-          hx-target="#session-control-container"
-          hx-swap="innerHTML"
-          hx-indicator="#submit-indicator"
-          class="space-y-6">
-        {% csrf_token %}
-
-        <!-- Opening Balance Input -->
-        <div>
-            <label for="opening_balance" class="block text-sm font-medium text-gray-700 mb-2">
-                Monto Inicial <span class="text-red-500">*</span>
-            </label>
-            <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
-                <input
-                    type="number"
-                    id="opening_balance"
-                    name="opening_balance"
-                    step="0.01"
-                    min="0"
-                    value="0.00"
-                    required
-                    autofocus
-                    class="block w-full rounded-lg border-gray-300 pl-7 pr-4 py-2.5 text-lg font-semibold tabular-nums focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="0.00">
+    <!-- Instructions Card -->
+    <section class="card p-6 shadow-float">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 mt-1">
+                <div class="bg-blue-100 rounded-lg p-2">
+                    <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Instrucciones</h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Ingresa el monto de efectivo inicial con el que comienzas tu turno.
+                    Este valor será utilizado para calcular el balance final al cierre de caja.
+                </p>
             </div>
         </div>
+    </section>
 
-        <!-- Quick Amount Buttons -->
-        <div>
-            <p class="block text-sm font-medium text-gray-700 mb-2">Montos Rápidos</p>
-            <div class="grid grid-cols-4 gap-2">
-                <button
-                    type="button"
-                    onclick="document.getElementById('opening_balance').value = '0.00'"
-                    class="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-medium transition border border-gray-200">
-                    $ 0
-                </button>
-                <button
-                    type="button"
-                    onclick="document.getElementById('opening_balance').value = '500.00'"
-                    class="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-medium transition border border-gray-200">
-                    $ 500
-                </button>
-                <button
-                    type="button"
-                    onclick="document.getElementById('opening_balance').value = '1000.00'"
-                    class="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-medium transition border border-gray-200">
-                    $ 1,000
-                </button>
-                <button
-                    type="button"
-                    onclick="document.getElementById('opening_balance').value = '2000.00'"
-                    class="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-medium transition border border-gray-200">
-                    $ 2,000
-                </button>
+    <!-- Opening Form -->
+    <section class="card shadow-float-lg overflow-hidden">
+        <form
+            hx-post="{% url 'cash_session:session-control' %}"
+            hx-target="#session-control-container"
+            hx-swap="innerHTML"
+            hx-indicator="#submit-indicator"
+            class="p-8">
+            {% csrf_token %}
+
+            <!-- Opening Balance Input -->
+            <div class="mb-8">
+                <label for="opening_balance" class="block text-xs font-bold text-gray-700 mb-3 uppercase tracking-wider">
+                    Monto Inicial en Efectivo <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 font-mono font-bold text-2xl">$</span>
+                    <input
+                        type="number"
+                        id="opening_balance"
+                        name="opening_balance"
+                        step="0.01"
+                        min="0"
+                        value="0.00"
+                        required
+                        autofocus
+                        class="block w-full bg-white border-2 border-gray-300 rounded-xl pl-14 pr-6 py-5 text-3xl font-mono font-bold text-gray-900 transition-all hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        placeholder="0.00">
+                </div>
+                <p class="mt-2 text-xs text-gray-500 font-medium">Efectivo disponible al inicio del turno</p>
             </div>
-        </div>
 
-        <!-- Submit Button -->
-        <button
-            type="submit"
-            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition">
-            Abrir Caja
-        </button>
+            <!-- Quick Amount Buttons -->
+            <div class="mb-8">
+                <p class="block text-xs font-bold text-gray-700 mb-3 uppercase tracking-wider">Montos Rápidos</p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <button
+                        type="button"
+                        onclick="document.getElementById('opening_balance').value = '0.00'; document.getElementById('opening_balance').focus();"
+                        class="btn bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg py-3 font-bold text-sm shadow-sm">
+                        <span class="font-mono">$ 0</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="document.getElementById('opening_balance').value = '500.00'; document.getElementById('opening_balance').focus();"
+                        class="btn bg-white hover:bg-blue-50 border-2 border-gray-300 hover:border-blue-400 text-gray-700 hover:text-blue-700 rounded-lg py-3 font-bold text-sm shadow-sm">
+                        <span class="font-mono">$ 500</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="document.getElementById('opening_balance').value = '1000.00'; document.getElementById('opening_balance').focus();"
+                        class="btn bg-white hover:bg-blue-50 border-2 border-gray-300 hover:border-blue-400 text-gray-700 hover:text-blue-700 rounded-lg py-3 font-bold text-sm shadow-sm">
+                        <span class="font-mono">$ 1,000</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="document.getElementById('opening_balance').value = '2000.00'; document.getElementById('opening_balance').focus();"
+                        class="btn bg-white hover:bg-blue-50 border-2 border-gray-300 hover:border-blue-400 text-gray-700 hover:text-blue-700 rounded-lg py-3 font-bold text-sm shadow-sm">
+                        <span class="font-mono">$ 2,000</span>
+                    </button>
+                </div>
+            </div>
 
-        <!-- Loading Indicator -->
-        <div id="submit-indicator" class="htmx-indicator text-center">
-            <div class="flex items-center justify-center gap-2 text-blue-600 text-sm">
-                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <!-- Submit Button -->
+            <button
+                type="submit"
+                class="btn w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-base shadow-float-lg">
+                <span class="flex items-center justify-center gap-2">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                    </svg>
+                    Abrir Caja
+                </span>
+            </button>
+
+            <!-- Loading Indicator -->
+            <div id="submit-indicator" class="htmx-indicator mt-4">
+                <div class="flex items-center justify-center gap-3 text-blue-600">
+                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm font-semibold">Abriendo caja...</span>
+                </div>
+            </div>
+        </form>
+
+        <!-- Security Footer -->
+        <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-8 py-4 border-t-2 border-gray-200">
+            <div class="flex items-center gap-3 text-xs text-gray-600">
+                <svg class="h-4 w-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
-                <span>Abriendo caja...</span>
+                <span class="font-medium">Transacción segura - Los datos se registran con timestamp y usuario</span>
             </div>
         </div>
-    </form>
+    </section>
 </div>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Caja - Sistema POS</title>
+    <title>Cierre de Caja - Sistema POS</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -163,22 +163,6 @@
         .htmx-request .htmx-indicator {
             display: flex;
         }
-
-        /* Shimmer effect for loading */
-        @keyframes shimmer {
-            0% {
-                background-position: -1000px 0;
-            }
-            100% {
-                background-position: 1000px 0;
-            }
-        }
-
-        .shimmer {
-            animation: shimmer 2s infinite;
-            background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
-            background-size: 1000px 100%;
-        }
     </style>
 </head>
 <body class="h-full antialiased">
@@ -188,7 +172,7 @@
             <div class="flex items-center gap-6">
                 <div>
                     <div class="text-xs uppercase tracking-wider text-gray-500 font-medium">Módulo</div>
-                    <div class="text-2xl font-black mt-0.5 text-gray-900">Control de Caja</div>
+                    <div class="text-2xl font-black mt-0.5 text-gray-900">Cierre de Caja</div>
                 </div>
                 <div class="h-8 w-px bg-gray-300"></div>
                 <div>
@@ -199,37 +183,18 @@
 
             <div class="flex gap-3">
                 <a
-                    href="/"
+                    href="{% url 'cash_session:session-page' %}"
                     class="px-5 py-2 text-sm font-semibold text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg transition-colors">
-                    Volver al inicio
+                    ← Volver a Control de Caja
                 </a>
             </div>
         </div>
     </header>
 
     <div class="max-w-4xl mx-auto p-8">
-        <!-- Session Control Container (HTMX Target) -->
-        <div
-            id="session-control-container"
-            hx-get="{% url 'cash_session:session-control' %}"
-            hx-trigger="load"
-            hx-swap="innerHTML"
-            hx-indicator="#loading-state"
-            class="animate-fade-in">
-
-            <!-- Loading State -->
-            <div id="loading-state" class="card p-12 shadow-float">
-                <div class="flex flex-col items-center justify-center gap-4 text-gray-600">
-                    <div class="relative">
-                        <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
-                        <div class="absolute inset-0 rounded-full bg-blue-50 blur-xl opacity-50"></div>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-lg font-semibold text-gray-900 mb-1">Cargando estado de caja</p>
-                        <p class="text-sm text-gray-500">Verificando sesión activa...</p>
-                    </div>
-                </div>
-            </div>
+        <!-- Close Session Container (HTMX Target) -->
+        <div id="close-session-container" class="animate-fade-in">
+            {% include 'cash_session/partials/close_form.html' %}
         </div>
     </div>
 

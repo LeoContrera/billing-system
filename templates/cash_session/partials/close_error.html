@@ -1,0 +1,93 @@
+<!-- Close Error Message -->
+<div class="space-y-6 animate-slide-in">
+    <!-- Error Header -->
+    <section class="card p-8 shadow-float-xl bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300">
+        <div class="text-center">
+            <div class="flex justify-center mb-6">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-red-500 rounded-full blur-2xl opacity-30"></div>
+                    <div class="relative bg-gradient-to-br from-red-600 to-orange-600 rounded-full p-6">
+                        <svg class="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <h1 class="text-3xl font-black text-red-900 mb-2">Error al Cerrar Caja</h1>
+            <p class="text-lg text-red-700 font-medium">No se pudo completar el cierre de caja</p>
+        </div>
+    </section>
+
+    <!-- Error Details -->
+    <section class="card p-6 shadow-float bg-red-50 border-2 border-red-200">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-bold text-red-800 mb-2">Detalles del error:</p>
+                <p class="text-sm text-red-700 leading-relaxed">{{ error }}</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Help Card -->
+    <section class="card p-6 shadow-float border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 mt-1">
+                <div class="bg-blue-100 rounded-lg p-2">
+                    <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wide">¿Qué puedes hacer?</h3>
+                <ul class="space-y-2 text-sm text-blue-800">
+                    <li class="flex items-start gap-2">
+                        <svg class="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Verifica que tengas una sesión de caja activa</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Regresa al control de caja para revisar el estado</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Si el problema persiste, contacta al administrador</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a
+            href="{% url 'cash_session:session-page' %}"
+            class="btn flex items-center justify-center gap-3 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 rounded-xl font-bold text-base shadow-float-lg">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Volver a Control de Caja
+        </a>
+
+        <button
+            onclick="location.reload()"
+            class="btn flex items-center justify-center gap-3 w-full bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-gray-400 text-gray-700 py-4 rounded-xl font-bold text-base shadow-float">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Intentar Nuevamente
+        </button>
+    </div>
+</div>
