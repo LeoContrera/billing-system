@@ -9,4 +9,3 @@ staticfiles/
 node_modules/
 .npm
 .vscode/
-Justfile
