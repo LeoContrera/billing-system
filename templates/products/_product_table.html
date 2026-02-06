@@ -1,19 +1,10 @@
 <!-- Low Stock Alert Banner -->
 {% if products %}
-    {% comment %}Count products with low stock in current view{% endcomment %}
+    {% comment %}Check if any product has low stock{% endcomment %}
     {% for product in products %}
         {% if product.stock_info.status == 'critical' or product.stock_info.status == 'warning' %}
             {% if forloop.first %}
-                {# Start counter #}
-                {% with low_stock_count=0 %}
-            {% endif %}
-        {% endif %}
-    {% endfor %}
-
-    {# Display banner if any product has low stock #}
-    {% for product in products %}
-        {% if product.stock_info.status == 'critical' or product.stock_info.status == 'warning' %}
-            {% if forloop.first %}
+                {# Display banner only once #}
 <div class="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 p-4 mb-4 animate-slide-in">
     <div class="flex items-start gap-3">
         <div class="flex-shrink-0">
@@ -23,7 +14,7 @@
         </div>
         <div class="flex-1">
             <h3 class="text-sm font-bold text-red-900 mb-1">
-                ⚠️ Alerta de Stock Bajo
+                Alerta de Stock Bajo
             </h3>
             <p class="text-sm text-red-700">
                 Hay productos en esta vista con stock por debajo del nivel recomendado.
@@ -33,6 +24,8 @@
     </div>
 </div>
             {% endif %}
+            {# Exit loop after first match #}
+            {% comment %}We only need to show banner once{% endcomment %}
         {% endif %}
     {% endfor %}
 {% endif %}
