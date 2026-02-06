@@ -520,6 +520,110 @@
         </div>
     </div>
 
+    <!-- Quick Stock Adjustment Modal -->
+    <div
+        x-show="showAdjustModal"
+        x-cloak
+        @click.self="closeAdjustModal()"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        style="display: none;">
+
+        <div class="card p-6 max-w-md w-full animate-scale-in shadow-float-xl" @click.stop>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-black text-purple-600">Ajuste Rápido de Stock</h3>
+                <button @click="closeAdjustModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Producto Info -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Producto</div>
+                <div class="text-sm font-bold text-gray-900" x-text="adjustData.productName"></div>
+                <div class="text-xs text-gray-600 mt-1">
+                    SKU: <span class="font-mono font-semibold" x-text="adjustData.sku"></span>
+                </div>
+            </div>
+
+            <!-- Stock Actual -->
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-4">
+                <div class="text-xs text-blue-600 uppercase tracking-wider font-semibold mb-1">Stock Actual</div>
+                <div class="text-3xl font-black text-blue-900 font-mono" x-text="adjustData.currentQty"></div>
+            </div>
+
+            <!-- Ajuste -->
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
+                    Ajuste <span class="text-red-500">*</span>
+                </label>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <button
+                        @click="adjustData.adjustment = -10"
+                        class="btn py-2 text-sm bg-red-100 hover:bg-red-200 text-red-700 border-2 border-red-300 rounded-lg">
+                        -10
+                    </button>
+                    <button
+                        @click="adjustData.adjustment = -1"
+                        class="btn py-2 text-sm bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg">
+                        -1
+                    </button>
+                    <button
+                        @click="adjustData.adjustment = 1"
+                        class="btn py-2 text-sm bg-green-50 hover:bg-green-100 text-green-600 border border-green-200 rounded-lg">
+                        +1
+                    </button>
+                    <button
+                        @click="adjustData.adjustment = 10"
+                        class="btn py-2 text-sm bg-green-100 hover:bg-green-200 text-green-700 border-2 border-green-300 rounded-lg">
+                        +10
+                    </button>
+                </div>
+
+                <input
+                    type="number"
+                    x-model="adjustData.adjustment"
+                    step="1"
+                    class="w-full bg-white border-2 border-gray-300 rounded-lg px-4 py-3 text-center text-lg font-mono font-bold text-gray-900"
+                    placeholder="0">
+
+                <div class="mt-2 text-center">
+                    <span class="text-xs text-gray-500">Nuevo stock: </span>
+                    <span class="text-sm font-bold text-purple-600 font-mono"
+                        x-text="(parseFloat(adjustData.currentQty) + parseFloat(adjustData.adjustment || 0)).toFixed(0)">
+                    </span>
+                </div>
+            </div>
+
+            <!-- Notas -->
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
+                    Notas (opcional)
+                </label>
+                <textarea
+                    x-model="adjustData.notes"
+                    rows="2"
+                    class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 resize-none"
+                    placeholder="Motivo del ajuste..."></textarea>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3">
+                <button
+                    @click="closeAdjustModal()"
+                    class="btn flex-1 py-2 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm">
+                    Cancelar
+                </button>
+                <button
+                    @click="submitAdjustment()"
+                    class="btn flex-1 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-bold text-sm">
+                    Aplicar Ajuste
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.body.addEventListener('htmx:configRequest', (event) => {
             event.detail.headers['X-CSRFToken'] = document.querySelector('meta[name="csrf-token"]').content;
@@ -536,6 +640,14 @@
                     price: '',
                     cost: '',
                     description: ''
+                },
+                showAdjustModal: false,
+                adjustData: {
+                    sku: '',
+                    productName: '',
+                    currentQty: 0,
+                    adjustment: 0,
+                    notes: ''
                 },
 
                 openCreateModal() {
@@ -571,6 +683,62 @@
                         cost: '',
                         description: ''
                     };
+                },
+
+                openAdjustModal(sku, name, currentQty) {
+                    this.adjustData = {
+                        sku: sku,
+                        productName: name,
+                        currentQty: currentQty,
+                        adjustment: 0,
+                        notes: ''
+                    };
+                    this.showAdjustModal = true;
+                },
+
+                closeAdjustModal() {
+                    this.showAdjustModal = false;
+                    setTimeout(() => {
+                        this.adjustData = {
+                            sku: '',
+                            productName: '',
+                            currentQty: 0,
+                            adjustment: 0,
+                            notes: ''
+                        };
+                    }, 300);
+                },
+
+                async submitAdjustment() {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('sku', this.adjustData.sku);
+                        formData.append('adjustment', this.adjustData.adjustment);
+                        formData.append('notes', this.adjustData.notes);
+
+                        const response = await fetch('/inventory/adjust-quick/', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            },
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            this.closeAdjustModal();
+                            // Recargar tabla de productos
+                            htmx.ajax('GET', '/products/', {target: '#product-table'});
+                            alert('Stock actualizado exitosamente');
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    } catch (error) {
+                        alert('Error al actualizar stock: ' + error.message);
+                    }
                 }
             }
         }

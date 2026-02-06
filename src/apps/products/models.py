@@ -133,6 +133,38 @@ class Product(models.Model):
             return ((self.price - self.cost) / self.cost) * 100
         return None
 
+    @property
+    def stock_info(self):
+        """Obtiene información de stock desde inventory app."""
+        from inventory.models import Stock
+        try:
+            stock = Stock.objects.get(product=self, location='PRINCIPAL')
+            return {
+                'current_qty': stock.current_qty,
+                'min_qty': stock.min_qty,
+                'max_qty': stock.max_qty,
+                'is_below_minimum': stock.is_below_minimum,
+                'status': self._get_stock_status(stock)
+            }
+        except Stock.DoesNotExist:
+            return None
+
+    def _get_stock_status(self, stock):
+        """Determina status de color para badge."""
+        if stock.is_below_minimum:
+            return 'critical'  # Rojo
+        elif stock.current_qty <= stock.min_qty * Decimal('1.5'):
+            return 'warning'   # Naranja
+        return 'good'          # Verde
+
+    @property
+    def inventory_value(self):
+        """Valor del inventario: costo × cantidad."""
+        stock_info = self.stock_info
+        if not stock_info or not self.cost:
+            return None
+        return self.cost * stock_info['current_qty']
+
 
 class PriceChangeReason(models.TextChoices):
     """Razones para cambio de precio."""

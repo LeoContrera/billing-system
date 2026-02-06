@@ -17,10 +17,13 @@
                 <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700 w-32">
                     Margen
                 </th>
+                <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-700 w-40">
+                    Stock Actual
+                </th>
                 <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-700 w-28">
                     Estado
                 </th>
-                <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-700 w-48">
+                <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-700 w-64">
                     Acciones
                 </th>
             </tr>
@@ -53,8 +56,8 @@
 
                     <!-- Price -->
                     <td class="px-6 py-4 text-right">
-                        <div class="inline-flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 max-w-full">
-                            <span class="font-mono text-xs font-bold text-blue-900 break-all" title="$ {{ product.price|floatformat:2 }}">
+                        <div class="inline-flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200">
+                            <span class="font-mono text-xs font-bold text-blue-900 whitespace-nowrap" title="$ {{ product.price|floatformat:2 }}">
                                 $ {{ product.price|floatformat:2 }}
                             </span>
                         </div>
@@ -63,7 +66,7 @@
                     <!-- Cost -->
                     <td class="px-6 py-4 text-right">
                         {% if product.cost %}
-                        <span class="font-mono text-xs font-semibold text-gray-700 break-all" title="$ {{ product.cost|floatformat:2 }}">
+                        <span class="font-mono text-xs font-semibold text-gray-700 whitespace-nowrap" title="$ {{ product.cost|floatformat:2 }}">
                             $ {{ product.cost|floatformat:2 }}
                         </span>
                         {% else %}
@@ -97,6 +100,66 @@
                         </div>
                         {% else %}
                         <span class="text-xs text-gray-400 font-medium">—</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Stock Actual -->
+                    <td class="px-6 py-4 text-center">
+                        {% if product.stock_info %}
+                        <div class="flex flex-col items-center gap-1">
+                            <!-- Badge cantidad -->
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border
+                                {% if product.stock_info.status == 'critical' %}
+                                    bg-red-50 border-red-200
+                                {% elif product.stock_info.status == 'warning' %}
+                                    bg-amber-50 border-amber-200
+                                {% else %}
+                                    bg-green-50 border-green-200
+                                {% endif %}">
+
+                                <!-- Icono -->
+                                <svg class="h-4 w-4
+                                    {% if product.stock_info.status == 'critical' %}
+                                        text-red-600
+                                    {% elif product.stock_info.status == 'warning' %}
+                                        text-amber-600
+                                    {% else %}
+                                        text-green-600
+                                    {% endif %}"
+                                    fill="currentColor" viewBox="0 0 20 20">
+                                    {% if product.stock_info.status == 'critical' %}
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    {% elif product.stock_info.status == 'warning' %}
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    {% else %}
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    {% endif %}
+                                </svg>
+
+                                <!-- Cantidad -->
+                                <span class="font-mono text-sm font-bold whitespace-nowrap
+                                    {% if product.stock_info.status == 'critical' %}
+                                        text-red-900
+                                    {% elif product.stock_info.status == 'warning' %}
+                                        text-amber-900
+                                    {% else %}
+                                        text-green-900
+                                    {% endif %}">
+                                    {{ product.stock_info.current_qty|floatformat:0 }}
+                                </span>
+                            </div>
+
+                            <!-- Mínimo (referencia) -->
+                            <span class="text-xs text-gray-500 font-medium">
+                                Min: {{ product.stock_info.min_qty|floatformat:0 }}
+                            </span>
+                        </div>
+                        {% else %}
+                        <button
+                            @click="alert('Funcionalidad de configuración de stock próximamente')"
+                            class="text-xs text-blue-600 hover:text-blue-800 font-semibold underline">
+                            Configurar Stock
+                        </button>
                         {% endif %}
                     </td>
 
@@ -135,6 +198,19 @@
                                 Editar
                             </button>
 
+                            <!-- Ajuste Stock Button -->
+                            {% if product.stock_info %}
+                            <button
+                                @click="openAdjustModal('{{ product.sku }}', '{{ product.name|escapejs }}', {{ product.stock_info.current_qty }})"
+                                class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 hover:border-purple-300 transition-all"
+                                title="Ajuste rápido de stock">
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                </svg>
+                                Stock
+                            </button>
+                            {% endif %}
+
                             <!-- Toggle Active -->
                             <form action="{% url 'products:toggle_active' product.sku %}" method="POST" class="inline">
                                 {% csrf_token %}
@@ -161,7 +237,7 @@
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="7" class="px-6 py-16 text-center">
+                    <td colspan="8" class="px-6 py-16 text-center">
                         <div class="flex flex-col items-center justify-center space-y-4">
                             <!-- Empty State Illustration -->
                             <div class="relative">

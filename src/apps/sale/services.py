@@ -10,6 +10,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from cash_session.services import CashSessionService
 from customers.models import Customer
 from inventory.services import InventoryService
 from products.models import Product
@@ -43,9 +44,24 @@ class SaleService:
         Returns:
             Sale: Nueva venta creada
 
+        Raises:
+            ValidationError: Si no se puede obtener o crear una sesión de caja
+
         Patrón: Factory Method
+
+        Nota: Obtiene o crea automáticamente una sesión de caja abierta
+        para el usuario. Si no existe una sesión activa, crea una nueva
+        con balance inicial de 0.
         """
+        # Obtener sesión de caja activa del usuario
+        cash_session = CashSessionService.get_active_session(user)
+
+        # Si no existe, crear una nueva sesión automáticamente
+        if not cash_session:
+            cash_session = CashSessionService.open_session(user)
+
         return Sale.objects.create(
+            cash_session=cash_session,
             created_by=user,
             status=Sale.PENDING
         )

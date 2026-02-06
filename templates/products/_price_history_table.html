@@ -57,7 +57,7 @@
 
                     <!-- Old Price -->
                     <td class="px-6 py-4 text-right">
-                        <span class="font-mono text-sm font-semibold text-gray-600">
+                        <span class="font-mono text-sm font-semibold text-gray-600 whitespace-nowrap">
                             $ {{ record.old_price|floatformat:2 }}
                         </span>
                     </td>
@@ -88,7 +88,7 @@
                     <!-- New Price -->
                     <td class="px-6 py-4 text-right">
                         <div class="inline-flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200">
-                            <span class="font-mono text-sm font-bold text-blue-900">
+                            <span class="font-mono text-sm font-bold text-blue-900 whitespace-nowrap">
                                 $ {{ record.new_price|floatformat:2 }}
                             </span>
                         </div>

@@ -389,8 +389,9 @@ class ProductService:
             - Q objects para consultas OR complejas
             - Ordenamiento dinámico con order_by()
             - Filter condicional basado en show_inactive
+            - prefetch_related para evitar N+1 queries con stock
         """
-        queryset = Product.objects.all()
+        queryset = Product.objects.prefetch_related('stocks').all()
 
         # Filtrar por estado activo/inactivo
         if not show_inactive:
@@ -415,6 +416,37 @@ class ProductService:
             queryset = queryset.order_by("name")
 
         return queryset
+
+    @staticmethod
+    def calculate_total_inventory_value(location: str = 'PRINCIPAL') -> Decimal:
+        """
+        Calcula valor total del inventario.
+
+        Args:
+            location: Ubicación del stock (default: PRINCIPAL)
+
+        Returns:
+            Decimal: Valor total del inventario (costo × cantidad)
+
+        Patrones ORM:
+            - annotate con F() expressions para cálculos a nivel DB
+            - aggregate para sumar valores
+            - Evita N+1 queries calculando todo en una query
+        """
+        from inventory.models import Stock
+        from django.db.models import Sum, DecimalField
+
+        total = Stock.objects.filter(
+            location=location,
+            product__is_active=True,
+            product__cost__isnull=False
+        ).annotate(
+            value=F('current_qty') * F('product__cost')
+        ).aggregate(
+            total=Sum('value', output_field=DecimalField())
+        )['total']
+
+        return total or Decimal('0.00')
 
     @staticmethod
     def get_price_history(
