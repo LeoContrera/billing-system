@@ -1,3 +1,42 @@
+<!-- Low Stock Alert Banner -->
+{% if products %}
+    {% comment %}Count products with low stock in current view{% endcomment %}
+    {% for product in products %}
+        {% if product.stock_info.status == 'critical' or product.stock_info.status == 'warning' %}
+            {% if forloop.first %}
+                {# Start counter #}
+                {% with low_stock_count=0 %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+    {# Display banner if any product has low stock #}
+    {% for product in products %}
+        {% if product.stock_info.status == 'critical' or product.stock_info.status == 'warning' %}
+            {% if forloop.first %}
+<div class="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 p-4 mb-4 animate-slide-in">
+    <div class="flex items-start gap-3">
+        <div class="flex-shrink-0">
+            <svg class="h-6 w-6 text-red-600 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="flex-1">
+            <h3 class="text-sm font-bold text-red-900 mb-1">
+                ⚠️ Alerta de Stock Bajo
+            </h3>
+            <p class="text-sm text-red-700">
+                Hay productos en esta vista con stock por debajo del nivel recomendado.
+                <span class="font-semibold">Reabastece pronto para evitar faltantes.</span>
+            </p>
+        </div>
+    </div>
+</div>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
 <div class="overflow-x-auto">
     <table class="w-full">
         <thead>
@@ -31,7 +70,7 @@
         <tbody class="bg-white">
             {% if products %}
                 {% for product in products %}
-                <tr class="table-row group">
+                <tr class="table-row group {% if product.stock_info.status == 'critical' %}bg-red-50 hover:bg-red-100 border-l-4 border-red-500{% elif product.stock_info.status == 'warning' %}bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-400{% endif %}">
                     <!-- SKU -->
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-2">

@@ -278,16 +278,31 @@
                     <h1 class="text-sm uppercase tracking-wider text-indigo-600 font-semibold mb-1">Gestión de Inventario</h1>
                     <p class="text-2xl font-black text-indigo-900">Catálogo de Productos</p>
                 </div>
-                <button
-                    @click="openCreateModal()"
-                    class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-bold shadow-float">
-                    <span class="flex items-center gap-2">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        Nuevo Producto
-                    </span>
-                </button>
+
+                <!-- Inventory Summary Widget (Auto-refresh with HTMX) -->
+                <div
+                    id="inventory-summary-widget"
+                    hx-get="{% url 'inventory:summary' %}"
+                    hx-trigger="load, every 30s"
+                    hx-swap="innerHTML">
+                    <!-- Loading placeholder -->
+                    <div class="flex items-center gap-6">
+                        <div class="bg-white rounded-lg px-6 py-3 border-2 border-gray-300 shadow-sm animate-pulse">
+                            <div class="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                            <div class="h-8 bg-gray-300 rounded w-32"></div>
+                        </div>
+                        <button
+                            @click="openCreateModal()"
+                            class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-bold shadow-float">
+                            <span class="flex items-center gap-2">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Nuevo Producto
+                            </span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
 

@@ -1,0 +1,82 @@
+<!-- Inventory Summary Widget - Auto-refresh via HTMX -->
+<div class="flex items-center gap-6">
+    <!-- Valor Total del Inventario -->
+    <div class="bg-white rounded-lg px-6 py-3 border-2 border-indigo-300 shadow-sm">
+        <div class="text-xs text-indigo-600 uppercase tracking-wider font-semibold mb-1">
+            Valor Inventario
+        </div>
+        <div class="text-2xl font-black text-indigo-900 font-mono">
+            $ {{ total_value|floatformat:2 }}
+        </div>
+    </div>
+
+    <!-- Alertas de Stock Bajo -->
+    {% if low_stock_count > 0 %}
+    <div class="bg-white rounded-lg px-6 py-3 border-2 border-red-300 shadow-sm relative">
+        <!-- Pulse animation badge -->
+        <div class="absolute -top-2 -right-2">
+            <span class="flex h-6 w-6">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-6 w-6 bg-red-500 items-center justify-center">
+                    <span class="text-white text-xs font-bold">{{ low_stock_count }}</span>
+                </span>
+            </span>
+        </div>
+
+        <div class="text-xs text-red-600 uppercase tracking-wider font-semibold mb-1 flex items-center gap-2">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            Stock Bajo
+        </div>
+        <div class="text-2xl font-black text-red-900 font-mono">
+            {{ low_stock_count }} producto{{ low_stock_count|pluralize }}
+        </div>
+
+        <!-- Tooltip con productos afectados -->
+        {% if low_stock_items %}
+        <div class="mt-2 pt-2 border-t border-red-200">
+            <div class="text-xs text-red-700 font-semibold mb-1">Productos afectados:</div>
+            <div class="space-y-1 max-h-24 overflow-y-auto">
+                {% for stock in low_stock_items %}
+                <div class="text-xs text-red-600 flex items-center justify-between gap-2">
+                    <span class="font-mono font-bold">{{ stock.product.sku }}</span>
+                    <span class="truncate flex-1">{{ stock.product.name|truncatewords:3 }}</span>
+                    <span class="font-bold whitespace-nowrap">{{ stock.current_qty|floatformat:0 }}/{{ stock.min_qty|floatformat:0 }}</span>
+                </div>
+                {% endfor %}
+                {% if low_stock_count > 5 %}
+                <div class="text-xs text-red-500 italic">
+                    +{{ low_stock_count|add:"-5" }} más...
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg px-6 py-3 border-2 border-green-300 shadow-sm">
+        <div class="text-xs text-green-600 uppercase tracking-wider font-semibold mb-1 flex items-center gap-2">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            Stock Normal
+        </div>
+        <div class="text-2xl font-black text-green-900">
+            Todo OK
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Botón Nuevo Producto -->
+    <button
+        @click="openCreateModal()"
+        class="btn bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-bold shadow-float">
+        <span class="flex items-center gap-2">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nuevo Producto
+        </span>
+    </button>
+</div>

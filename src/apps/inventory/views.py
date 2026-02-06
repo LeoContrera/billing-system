@@ -133,23 +133,28 @@ def adjust_stock_quick(request):
 @login_required
 def inventory_summary(request):
     """
-    Resumen de inventario con valor total.
+    Resumen de inventario con valor total y alertas de stock bajo.
 
     GET /inventory/summary/
     """
+    from django.shortcuts import render
+
     total_value = ProductService.calculate_total_inventory_value()
     low_stock = InventoryService.get_products_below_minimum()
+    low_stock_count = len(low_stock)
 
-    # Si es HTMX, retornar solo el valor
+    # Si es HTMX, retornar fragmento HTML
     if request.headers.get('HX-Request'):
-        return HttpResponse(
-            f'<span id="inventory-value">$ {total_value:,.2f}</span>'
-        )
+        return render(request, 'products/_inventory_summary_widget.html', {
+            'total_value': total_value,
+            'low_stock_count': low_stock_count,
+            'low_stock_items': low_stock[:5]  # Mostrar solo los primeros 5
+        })
 
     # Si es JSON API
     return JsonResponse({
         'total_value': float(total_value),
-        'low_stock_count': len(low_stock),
+        'low_stock_count': low_stock_count,
         'low_stock_items': [
             {
                 'sku': stock.product.sku,
