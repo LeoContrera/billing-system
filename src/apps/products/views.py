@@ -347,9 +347,8 @@ def bulk_price_update_submit(request):
         percentage_str = request.POST.get("percentage_adjustment", "0").strip()
         category = request.POST.get("category", "").strip()
 
-        # Detectar el formato original (coma o punto como separador decimal)
+        # Guardar el valor original tal como lo ingresó el usuario
         original_percentage_str = percentage_str
-        uses_comma = ',' in percentage_str
 
         # Normalizar para conversión a Decimal (Python usa punto)
         percentage_str_normalized = percentage_str.replace(',', '.')
@@ -372,16 +371,15 @@ def bulk_price_update_submit(request):
             user=request.user,
         )
 
-        # Mensaje de éxito - preservar formato original (coma o punto)
+        # Mensaje de éxito - usar el valor original que ingresó el usuario
         category_text = result['category_display'] if result['category'] else "todas las categorías"
 
-        # Formatear el porcentaje con el mismo separador que ingresó el usuario
-        percentage_value = str(percentage_adjustment)
-        if uses_comma:
-            percentage_value = percentage_value.replace('.', ',')
-
-        # Agregar signo + si es positivo
-        adjustment_text = f"+{percentage_value}%" if percentage_adjustment > 0 else f"{percentage_value}%"
+        # Usar directamente el string original ingresado por el usuario
+        # Agregar signo + si es positivo (verificar si ya no lo tiene)
+        if percentage_adjustment > 0 and not original_percentage_str.startswith('+'):
+            adjustment_text = f"+{original_percentage_str}%"
+        else:
+            adjustment_text = f"{original_percentage_str}%"
 
         messages.success(
             request,
