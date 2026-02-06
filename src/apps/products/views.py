@@ -344,12 +344,19 @@ def bulk_price_update_submit(request):
     """
     try:
         # Obtener datos del formulario
-        percentage_str = request.POST.get("percentage_adjustment", "0")
+        percentage_str = request.POST.get("percentage_adjustment", "0").strip()
         category = request.POST.get("category", "").strip()
+
+        # Detectar el formato original (coma o punto como separador decimal)
+        original_percentage_str = percentage_str
+        uses_comma = ',' in percentage_str
+
+        # Normalizar para conversión a Decimal (Python usa punto)
+        percentage_str_normalized = percentage_str.replace(',', '.')
 
         # Convertir porcentaje
         try:
-            percentage_adjustment = Decimal(percentage_str)
+            percentage_adjustment = Decimal(percentage_str_normalized)
         except (InvalidOperation, ValueError):
             raise ValidationError("Porcentaje de ajuste inválido")
 
@@ -365,9 +372,16 @@ def bulk_price_update_submit(request):
             user=request.user,
         )
 
-        # Mensaje de éxito
+        # Mensaje de éxito - preservar formato original (coma o punto)
         category_text = result['category_display'] if result['category'] else "todas las categorías"
-        adjustment_text = f"+{percentage_adjustment}%" if percentage_adjustment > 0 else f"{percentage_adjustment}%"
+
+        # Formatear el porcentaje con el mismo separador que ingresó el usuario
+        percentage_value = str(percentage_adjustment)
+        if uses_comma:
+            percentage_value = percentage_value.replace('.', ',')
+
+        # Agregar signo + si es positivo
+        adjustment_text = f"+{percentage_value}%" if percentage_adjustment > 0 else f"{percentage_value}%"
 
         messages.success(
             request,
