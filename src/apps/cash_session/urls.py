@@ -8,6 +8,10 @@ from . import views
 app_name = 'cash_session'
 
 urlpatterns = [
+    # Login de cajeros
+    path('login/', views.cashier_login_view, name='cashier-login'),
+    path('logout/', views.cashier_logout_view, name='cashier-logout'),
+
     # Página principal (layout completo con CSS)
     path('', views.session_page_view, name='session-page'),
 

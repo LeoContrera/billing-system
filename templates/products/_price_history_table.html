@@ -64,23 +64,27 @@
 
                     <!-- Change Indicator -->
                     <td class="px-6 py-4 text-center">
-                        <div class="flex items-center justify-center gap-1">
+                        <div class="inline-flex items-center gap-1">
                             {% if record.is_increase %}
-                            <svg class="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <span class="text-xs font-bold text-green-600">
+                            <div class="w-5 flex items-center justify-center flex-shrink-0">
+                                <svg class="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-green-600 font-mono">
                                 +{{ record.change_percentage|floatformat:1 }}%
                             </span>
                             {% elif record.is_decrease %}
-                            <svg class="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                            <span class="text-xs font-bold text-red-600">
+                            <div class="w-5 flex items-center justify-center flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-red-600 font-mono">
                                 {{ record.change_percentage|floatformat:1 }}%
                             </span>
                             {% else %}
-                            <span class="text-xs font-semibold text-gray-500">0%</span>
+                            <span class="text-xs font-semibold text-gray-500 font-mono">0%</span>
                             {% endif %}
                         </div>
                     </td>

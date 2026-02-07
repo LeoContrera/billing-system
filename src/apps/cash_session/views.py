@@ -7,16 +7,19 @@ delegando la lógica de negocio a CashSessionService.
 
 from decimal import Decimal, InvalidOperation
 
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
+from .decorators import cashier_required
 from .services import CashSessionService
 
 
-@login_required
+@cashier_required
 @require_http_methods(["GET"])
 def session_page_view(request):
     """
@@ -28,7 +31,7 @@ def session_page_view(request):
     return render(request, 'cash_session/session_control.html')
 
 
-@login_required
+@cashier_required
 @require_http_methods(["GET", "POST"])
 def session_control_htmx_view(request):
     """
@@ -91,7 +94,7 @@ def session_control_htmx_view(request):
             )
 
 
-@login_required
+@cashier_required
 @require_http_methods(["GET"])
 def close_session_page_view(request):
     """
@@ -114,7 +117,7 @@ def close_session_page_view(request):
     return render(request, 'cash_session/close_session.html', context)
 
 
-@login_required
+@cashier_required
 @require_http_methods(["POST"])
 def close_session_htmx_view(request):
     """
@@ -163,3 +166,55 @@ def close_session_htmx_view(request):
             {'error': str(e)},
             status=400
         )
+
+
+@require_http_methods(["GET", "POST"])
+def cashier_login_view(request):
+    """
+    Vista de login específica para cajeros.
+
+    GET: Muestra el formulario de login
+    POST: Procesa las credenciales y verifica que el usuario sea cajero
+    """
+    # Si el usuario ya está autenticado y es cajero, redirigir a cash-session
+    if request.user.is_authenticated and request.user.groups.filter(name='Cajeros').exists():
+        return redirect('cash_session:session-page')
+
+    if request.method == "POST":
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+
+        # Validar que se proporcionen ambos campos
+        if not username or not password:
+            messages.error(request, 'Por favor, ingresa tu usuario y contraseña.')
+            return render(request, 'cash_session/cashier_login.html')
+
+        # Autenticar usuario
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            # Verificar que el usuario pertenezca al grupo 'Cajeros'
+            if user.groups.filter(name='Cajeros').exists():
+                login(request, user)
+                messages.success(request, f'¡Bienvenido, {user.get_full_name() or user.username}!')
+                return redirect('cash_session:session-page')
+            else:
+                messages.error(
+                    request,
+                    'No tienes permisos para acceder al sistema de caja. '
+                    'Contacta al administrador si crees que esto es un error.'
+                )
+        else:
+            messages.error(request, 'Usuario o contraseña incorrectos.')
+
+    return render(request, 'cash_session/cashier_login.html')
+
+
+@require_http_methods(["POST"])
+def cashier_logout_view(request):
+    """
+    Vista para cerrar sesión de cajero.
+    """
+    logout(request)
+    messages.success(request, 'Has cerrado sesión exitosamente.')
+    return redirect('cash_session:cashier-login')

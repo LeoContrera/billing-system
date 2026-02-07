@@ -1,0 +1,474 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema POS</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- HTMX -->
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        * {
+            font-variant-numeric: tabular-nums;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+        }
+
+        .font-mono {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+            overflow-y: auto;
+            box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 40;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left-color: #60a5fa;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-left-color: #3b82f6;
+        }
+
+        .nav-section-title {
+            padding: 20px 20px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--gray-200);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .table-row {
+            border-bottom: 1px solid var(--gray-200);
+            transition: background 0.15s;
+        }
+
+        .table-row:hover {
+            background: var(--gray-50);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body class="h-full antialiased">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <!-- Logo / Header -->
+        <div class="p-6 border-b border-blue-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-white font-black text-lg">Sistema POS</div>
+                    <div class="text-blue-300 text-xs font-semibold">Dashboard</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="py-4">
+            <!-- Operaciones Diarias -->
+            <div class="nav-section-title">Operaciones Diarias</div>
+            <a href="/sale/pos/" class="nav-item">
+                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Punto de Venta
+            </a>
+            <a href="/cash-session/" class="nav-item">
+                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Sesiones de Caja
+            </a>
+            <a href="/sale/" class="nav-item">
+                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Ventas y Facturas
+            </a>
+
+            <!-- Catálogo y Stock -->
+            <div class="nav-section-title">Catálogo y Stock</div>
+            <a href="/products/" class="nav-item">
+                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                Productos e Inventario
+            </a>
+
+            <!-- Relaciones -->
+            <div class="nav-section-title">Relaciones</div>
+            <a href="/customers/" class="nav-item">
+                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Clientes
+            </a>
+
+            <!-- Análisis -->
+            <div class="nav-section-title">Análisis</div>
+            <a href="#" class="nav-item">
+                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Reportes
+            </a>
+            <a href="#" class="nav-item">
+                <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Configuración
+            </a>
+        </nav>
+
+        <!-- User Info -->
+        <div class="absolute bottom-0 left-0 right-0 p-4 bg-blue-900 border-t border-blue-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center">
+                    <span class="text-sm font-bold text-white">
+                        {{ request.user.first_name.0|default:request.user.username.0|upper }}{{ request.user.last_name.0|default:""|upper }}
+                    </span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-white text-sm font-semibold truncate">
+                        {{ request.user.get_full_name|default:request.user.username }}
+                    </div>
+                    <div class="text-blue-300 text-xs">Usuario activo</div>
+                </div>
+                <a href="/admin/logout/" class="text-blue-300 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content p-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-black text-gray-900 mb-2">Bienvenido al Dashboard</h1>
+            <p class="text-gray-600">Vista general del rendimiento de tu negocio</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Sales -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Ventas Totales</div>
+                    <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-3xl font-black text-gray-900 mb-1">{{ weekly_performance.total_sales }}</div>
+                <div class="text-xs text-gray-500">Última semana</div>
+            </div>
+
+            <!-- Total Revenue -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Ingresos</div>
+                    <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-3xl font-black text-gray-900 mb-1 font-mono">$ {{ weekly_performance.total_revenue|floatformat:2 }}</div>
+                <div class="text-xs text-gray-500">Última semana</div>
+            </div>
+
+            <!-- Cash Sessions -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Sesiones de Caja</div>
+                    <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-3xl font-black text-gray-900 mb-1">{{ weekly_performance.total_sessions }}</div>
+                <div class="text-xs text-gray-500">{{ weekly_performance.closed_sessions }} cerradas</div>
+            </div>
+
+            <!-- Average Sale -->
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Promedio por Venta</div>
+                    <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-3xl font-black text-gray-900 mb-1 font-mono">$ {{ weekly_performance.average_sale|floatformat:2 }}</div>
+                <div class="text-xs text-gray-500">Última semana</div>
+            </div>
+        </div>
+
+        <!-- Weekly Performance Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8">
+            <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+                <h2 class="text-lg font-black text-gray-900">Rendimiento Semanal</h2>
+                <p class="text-sm text-gray-600 mt-1">Desglose diario de ventas e ingresos</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b-2 border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Fecha
+                            </th>
+                            <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Cantidad de Ventas
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Ingresos Totales
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for day in daily_breakdown %}
+                        <tr class="table-row">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                        <span class="text-xs font-bold text-gray-600">{{ day.day_name }}</span>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold text-gray-900">{{ day.date }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="text-2xl font-black text-blue-600">{{ day.sales_count }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="font-mono text-lg font-bold text-gray-900">$ {{ day.total_revenue|floatformat:2 }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Cash Sessions -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-black text-gray-900">Últimas Operaciones de Caja</h2>
+                        <p class="text-sm text-gray-600 mt-1">Historial reciente de sesiones</p>
+                    </div>
+                    <a href="/cash-session/" class="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                        Ver Todas
+                    </a>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b-2 border-gray-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Apertura
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Cajero
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Monto Inicial
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Monto Final
+                            </th>
+                            <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Estado
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for session in recent_sessions %}
+                        <tr class="table-row">
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-bold text-gray-900">{{ session.opening_timestamp|date:"d/m/Y" }}</div>
+                                <div class="text-xs text-gray-500 font-mono">{{ session.opening_timestamp|date:"H:i" }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <span class="text-xs font-bold text-blue-600">
+                                            {{ session.user.first_name.0|default:session.user.username.0|upper }}{{ session.user.last_name.0|default:""|upper }}
+                                        </span>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-900">
+                                        {{ session.user.get_full_name|default:session.user.username }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="font-mono text-sm font-semibold text-gray-700">$ {{ session.opening_balance|floatformat:2 }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                {% if session.is_open %}
+                                <span class="text-sm text-gray-400">—</span>
+                                {% else %}
+                                <span class="font-mono text-sm font-semibold text-gray-700">$ {{ session.closing_balance|floatformat:2 }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                {% if session.is_open %}
+                                <span class="badge badge-warning">Abierta</span>
+                                {% else %}
+                                <span class="badge badge-success">Cerrada</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center gap-3 text-gray-400">
+                                    <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                                    </svg>
+                                    <div class="text-sm font-semibold">No hay sesiones de caja registradas</div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = document.querySelector('meta[name="csrf-token"]').content;
+        });
+    </script>
+</body>
+</html>
